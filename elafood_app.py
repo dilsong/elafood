@@ -1,13 +1,41 @@
 import streamlit as st
 from urllib.parse import quote
+from PIL import Image
+import base64
 
+def image_to_base64(path):
+    with open(path, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+#logo = Image.open("Imagenes/Logos/logo.jpg")
+logo_base64 = image_to_base64("Imagenes/Logos/logo.jpg")
+print("Logo cargado correctamente")
 # =========================
 # CONFIGURACIÓN BÁSICA
 # =========================
 st.set_page_config(page_title="ElaFood - Pedidos", page_icon="🍽️", layout="centered")
-
+# =========================
+# BANNER INICIAL
+# =========================
+st.markdown(
+    f"""
+    <div style="
+        background-color:#8B1E1E;
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+    ">
+        <img src="data:image/jpg;base64,{logo_base64}" width="120" style="margin-bottom:15px;">
+        <h1 style="margin-bottom:5px;">ElaFood</h1>
+        <h3 style="font-weight:300; margin-top:0;">Food made with love</h3>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 # Cambia estos datos por los tuyos
-WHATSAPP_NUMBER = "17865551234"  # Formato internacional sin + ni espacios, ej: 1786xxxxxxx
+WHATSAPP_NUMBER = "+15619004479"  # Formato internacional sin + ni espacios, ej: 1786xxxxxxx
 ZELLE_EMAIL = "tuzelle@example.com"
 ZELLE_NAME = "ElaFood"
 
