@@ -1,21 +1,21 @@
 import urllib.parse
 
 def generar_mensaje(carrito, total, cliente):
-    mensaje = "Pedido ElaFood:%0A%0A"
+    # MENSAJE LIMPIO (sin codificar)
+    mensaje = "Pedido ElaFood:\n\n"
 
-    # Datos del cliente
-    mensaje += urllib.parse.quote(f"Cliente: {cliente['nombre']}") + "%0A"
-    mensaje += urllib.parse.quote(f"Teléfono: {cliente['telefono']}") + "%0A"
-    mensaje += urllib.parse.quote(f"Dirección: {cliente['direccion']}") + "%0A"
-    mensaje += urllib.parse.quote(f"Notas: {cliente['notas']}") + "%0A%0A"
+    mensaje += f"Cliente: {cliente['nombre']}\n"
+    mensaje += f"Teléfono: {cliente['telefono']}\n"
+    mensaje += f"Dirección: {cliente['direccion']}\n"
+    mensaje += f"Notas: {cliente['notas']}\n\n"
 
-    # Productos
     for item in carrito:
         linea = f"- {item['cantidad']} x {item['producto']} = ${item['precio'] * item['cantidad']}"
-        mensaje += urllib.parse.quote(linea) + "%0A"
+        mensaje += linea + "\n"
 
-    mensaje += f"%0ATotal: ${total}"
+    mensaje += f"\nTotal: ${total}"
     return mensaje
+
 
 def generar_link_whatsapp(telefono, mensaje):
     telefono = telefono.replace("+", "").replace(" ", "")

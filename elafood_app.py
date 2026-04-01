@@ -6,13 +6,30 @@ from modules.whatsapp import generar_mensaje, generar_link_whatsapp
 from modules.estilos import banner
 from modules.tarjetas import tarjeta_producto
 from modules.cliente import formulario_cliente
-
 from modules.config import TELEFONO_ELAFOOD
 
+# ---------------------------------------------------------
+# CONFIGURACIÓN INICIAL
+# ---------------------------------------------------------
 st.set_page_config(page_title="ElaFood", layout="wide")
 
-# Banner
+# Banner superior
 banner()
+
+# ---------------------------------------------------------
+# INICIALIZACIÓN DE SESSION_STATE
+# ---------------------------------------------------------
+if "carrito" not in st.session_state:
+    st.session_state.carrito = []
+
+if "mensaje_generado" not in st.session_state:
+    st.session_state.mensaje_generado = ""
+
+if "link" not in st.session_state:
+    st.session_state.link = ""
+
+if "pedido_listo" not in st.session_state:
+    st.session_state.pedido_listo = False
 
 if "pedido_generado" not in st.session_state:
     st.session_state.pedido_generado = False
@@ -20,80 +37,77 @@ if "pedido_generado" not in st.session_state:
 if "pedido_enviado" not in st.session_state:
     st.session_state.pedido_enviado = False
 
-# Inicializar carrito
+# ---------------------------------------------------------
+# MENÚ Y PRODUCTOS
+# ---------------------------------------------------------
 inicializar_carrito()
 
-# Mostrar menú
 categoria = mostrar_menu()
-
-# Mostrar productos de la categoría
 st.subheader(f"Categoría: {categoria}")
 
 for p in obtener_productos(categoria):
     key = f"{categoria}_{p['nombre']}"
     cantidad, agregar_btn = tarjeta_producto(
-    p["nombre"],
-    p["precio"],
-    p["imagen"],
-    p.get("descripcion", ""),
-    key)
+        p["nombre"],
+        p["precio"],
+        p["imagen"],
+        p.get("descripcion", ""),
+        key
+    )
 
     if agregar_btn and cantidad > 0:
         agregar(p["nombre"], cantidad, p["precio"])
         st.success(f"{cantidad} x {p['nombre']} agregado(s) al carrito.")
 
-
-# Mostrar carrito
+# ---------------------------------------------------------
+# CARRITO Y CLIENTE
+# ---------------------------------------------------------
 total = mostrar_carrito()
-# Formulario del cliente
 cliente = formulario_cliente()
 
 st.sidebar.markdown("---")
 
-# Botón principal
-generar = st.sidebar.button("Generar pedido", disabled=st.session_state.pedido_generado)
+# ---------------------------------------------------------
+# BOTÓN: GENERAR PEDIDO
+# ---------------------------------------------------------
+generar = st.sidebar.button(
+    "Generar pedido",
+    disabled=st.session_state.pedido_generado
+)
 
-# Cuando presionan "Generar pedido"
 if generar:
     if len(st.session_state.carrito) == 0:
         st.sidebar.warning("El carrito está vacío.")
     elif cliente["nombre"] == "":
         st.sidebar.warning("Por favor ingresa el nombre del cliente.")
     else:
-        st.session_state.pedido_generado = True
         mensaje = generar_mensaje(st.session_state.carrito, total, cliente)
+        st.session_state.mensaje_generado = mensaje
         st.session_state.link = generar_link_whatsapp(TELEFONO_ELAFOOD, mensaje)
 
-# Si el pedido ya fue generado, mostrar elementos
-if st.session_state.pedido_generado:
+        st.session_state.pedido_listo = True
+        st.session_state.pedido_generado = True
+        st.sidebar.success("Pedido generado. Presione enviar por WhatsApp.")
 
-    st.sidebar.success("Pedido generado")
-
-    st.sidebar.markdown("")
-
-    # Botón real para detectar clic
-    enviar = st.sidebar.button("Enviar pedido por WhatsApp")
-
-    if enviar:
+# ---------------------------------------------------------
+# BOTÓN: ENVIAR POR WHATSAPP (ABRE DIRECTO Y DESAPARECE)
+# ---------------------------------------------------------
+if st.session_state.pedido_listo and not st.session_state.pedido_enviado:
+    if st.sidebar.button("Enviar por WhatsApp", key="enviar_ws_btn"):
         st.session_state.pedido_enviado = True
-        st.sidebar.markdown(
-            f"""
-            <a href="{st.session_state.link}" target="_blank" style="
-                display: inline-block;
-                padding: 10px 15px;
-                background-color: #25D366;
-                color: white;
-                border-radius: 8px;
-                text-decoration: none;
-                font-weight: bold;
-            ">
-                Abrir WhatsApp
-            </a>
-            """,
-            unsafe_allow_html=True
-        )
+        # Abrir WhatsApp directamente SIN recargar la app
+        js = f"window.open('{st.session_state.link}', '_blank').focus();"
+        st.components.v1.html(f"<script>{js}</script>", height=0)
 
-# Si ya se envió el pedido, mostrar mensajes finales
+# ---------------------------------------------------------
+# BOTÓN: HACER NUEVO PEDIDO (solo después de enviar)
+# ---------------------------------------------------------
 if st.session_state.pedido_enviado:
-    st.sidebar.info("Por favor espere nuestra confirmación para que pueda efectuar el pago.")
-    st.sidebar.warning("Si desea hacer un nuevo pedido presione Vaciar Carrito.")
+    if st.sidebar.button("Hacer nuevo pedido", key="nuevo_pedido_btn"):
+        st.session_state.carrito = []
+        st.session_state.mensaje_generado = ""
+        st.session_state.link = ""
+        st.session_state.pedido_listo = False
+        st.session_state.pedido_generado = False
+        st.session_state.pedido_enviado = False
+        st.sidebar.success("Listo. Puedes comenzar un nuevo pedido.")
