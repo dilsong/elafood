@@ -90,17 +90,51 @@ if generar:
         st.sidebar.success("Pedido generado. Presione enviar por WhatsApp.")
 
 # ---------------------------------------------------------
-# BOTÓN: ENVIAR POR WHATSAPP (ABRE DIRECTO Y DESAPARECE)
+# ENVIAR POR WHATSAPP (LINK REAL + AUTO-MARCAR ENVÍO)
 # ---------------------------------------------------------
 if st.session_state.pedido_listo and not st.session_state.pedido_enviado:
-    if st.sidebar.button("Enviar por WhatsApp", key="enviar_ws_btn"):
+
+    # Enlace real que abre WhatsApp en móviles
+    st.sidebar.markdown(
+        f"""
+        <a href="{st.session_state.link}" target="_blank" id="ws_link" style="
+            display: block;
+            padding: 12px;
+            background-color: #25D366;
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;">
+            Enviar por WhatsApp
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Botón invisible para marcar que ya se envió
+    marcar = st.sidebar.button(" ", key="marcar_envio_btn")
+
+    # Script que presiona automáticamente el botón invisible
+    st.components.v1.html(
+        """
+        <script>
+            const link = document.getElementById("ws_link");
+            link.addEventListener("click", () => {
+                const btn = window.parent.document.querySelector('button[k="marcar_envio_btn"]');
+                if (btn) btn.click();
+            });
+        </script>
+        """,
+        height=0
+    )
+
+    if marcar:
         st.session_state.pedido_enviado = True
-        # Abrir WhatsApp directamente SIN recargar la app
-        js = f"window.open('{st.session_state.link}', '_blank').focus();"
-        st.components.v1.html(f"<script>{js}</script>", height=0)
 
 # ---------------------------------------------------------
-# BOTÓN: HACER NUEVO PEDIDO (solo después de enviar)
+# HACER NUEVO PEDIDO
 # ---------------------------------------------------------
 if st.session_state.pedido_enviado:
     if st.sidebar.button("Hacer nuevo pedido", key="nuevo_pedido_btn"):
