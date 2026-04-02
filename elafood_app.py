@@ -68,80 +68,45 @@ cliente = formulario_cliente()
 st.sidebar.markdown("---")
 
 # ---------------------------------------------------------
-# BOTÓN: GENERAR PEDIDO
+# MOSTRAR BOTÓN GENERAR PEDIDO SOLO SI HAY PRODUCTOS
 # ---------------------------------------------------------
-generar = st.sidebar.button(
-    "Generar pedido",
-    disabled=st.session_state.pedido_generado
-)
+hay_productos = len(st.session_state.carrito) > 0
 
+if hay_productos and not st.session_state.pedido_generado:
+    generar = st.sidebar.button("Generar pedido")
+else:
+    generar = False
+
+# ---------------------------------------------------------
+# GENERAR PEDIDO
+# ---------------------------------------------------------
 if generar:
-    if len(st.session_state.carrito) == 0:
-        st.sidebar.warning("El carrito está vacío.")
-    elif cliente["nombre"] == "":
+    if cliente["nombre"] == "":
         st.sidebar.warning("Por favor ingresa el nombre del cliente.")
     else:
         mensaje = generar_mensaje(st.session_state.carrito, total, cliente)
         st.session_state.mensaje_generado = mensaje
         st.session_state.link = generar_link_whatsapp(TELEFONO_ELAFOOD, mensaje)
 
-        st.session_state.pedido_listo = True
         st.session_state.pedido_generado = True
-        st.sidebar.success("Pedido generado. Presione enviar por WhatsApp.")
+        st.sidebar.success("Pedido generado. Presione Enviar por WS.")
 
 # ---------------------------------------------------------
-# ENVIAR POR WHATSAPP (LINK REAL + AUTO-MARCAR ENVÍO)
+# ENVIAR POR WS (BOTÓN REAL QUE ABRE WHATSAPP + REINICIA)
 # ---------------------------------------------------------
-if st.session_state.pedido_listo and not st.session_state.pedido_enviado:
+if st.session_state.pedido_generado:
+    if st.sidebar.button("Enviar por WS", key="enviar_ws_btn"):
 
-    # Enlace real que abre WhatsApp en móviles
-    st.sidebar.markdown(
-        f"""
-        <a href="{st.session_state.link}" target="_blank" id="ws_link" style="
-            display: block;
-            padding: 12px;
-            background-color: #25D366;
-            color: white;
-            text-align: center;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 16px;">
-            Enviar por WhatsApp
-        </a>
-        """,
-        unsafe_allow_html=True
-    )
+        # ABRIR WHATSAPP DIRECTO SIN RECARGAR LA APP
+        js = f"window.open('{st.session_state.link}', '_blank').focus();"
+        st.components.v1.html(f"<script>{js}</script>", height=0)
 
-    # Botón invisible para marcar que ya se envió
-    marcar = st.sidebar.button(" ", key="marcar_envio_btn")
-
-    # Script que presiona automáticamente el botón invisible
-    st.components.v1.html(
-        """
-        <script>
-            const link = document.getElementById("ws_link");
-            link.addEventListener("click", () => {
-                const btn = window.parent.document.querySelector('button[k="marcar_envio_btn"]');
-                if (btn) btn.click();
-            });
-        </script>
-        """,
-        height=0
-    )
-
-    if marcar:
-        st.session_state.pedido_enviado = True
-
-# ---------------------------------------------------------
-# HACER NUEVO PEDIDO
-# ---------------------------------------------------------
-if st.session_state.pedido_enviado:
-    if st.sidebar.button("Hacer nuevo pedido", key="nuevo_pedido_btn"):
+        # REINICIAR LA APLICACIÓN AUTOMÁTICAMENTE
         st.session_state.carrito = []
         st.session_state.mensaje_generado = ""
         st.session_state.link = ""
-        st.session_state.pedido_listo = False
         st.session_state.pedido_generado = False
+        st.session_state.pedido_listo = False
         st.session_state.pedido_enviado = False
+
         st.sidebar.success("Listo. Puedes comenzar un nuevo pedido.")
