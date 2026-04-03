@@ -1,1 +1,2 @@
 streamlit run elafood_app.py
+streamlit run chef_app.py

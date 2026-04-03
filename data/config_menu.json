@@ -1,0 +1,23 @@
+{
+  "fecha_menu": "2026-04-03",
+  "categorias": {
+    "lunch": true,
+    "comida_rapida": true,
+    "postres": true,
+    "otros": true
+  },
+  "platos": {
+    "lunch": [
+      "produ_001"
+    ],
+    "comida_rapida": [
+      "produ_003"
+    ],
+    "postres": [
+      "produ_005"
+    ],
+    "otros": [
+      "produ_007"
+    ]
+  }
+}

@@ -1,50 +1,49 @@
 import streamlit as st
 from PIL import Image
+import os
 
-def tarjeta_producto(nombre, precio, imagen, descripcion, key):
-    
+
+def tarjeta_producto(nombre, precio, imagen, descripcion, key, mostrar_boton=True):
+    # Verificar si la imagen existe
+    if not os.path.exists(imagen):
+        imagen = "Imagenes/Logos/no_image.JPG"   # Imagen por defecto
+
     st.markdown(
         """
-        <div style="
+        <style>
+        .card {
             border: 1px solid #ddd;
-            padding: 15px;
             border-radius: 10px;
+            padding: 15px;
             margin-bottom: 15px;
-            background-color: #ffffff;
-        ">
+        }
+        </style>
         """,
         unsafe_allow_html=True
     )
 
-    col1, col2 = st.columns([1, 2])
-
-    # Imagen
-    with col1:
-        try:
-            img = Image.open(imagen)
-            st.image(img, width=180)
-        except:
-            st.write("Imagen no disponible")
-
-    # Texto + cantidad + botón
-    with col2:
-        st.write(f"### {nombre}")
+    with st.container():
+        st.image(imagen, width=200)
+        st.subheader(nombre)
+        st.write(descripcion)
         st.write(f"**Precio:** ${precio}")
-        st.write(descripcion if descripcion else "")
 
-        cantidad = st.number_input(
-            "Cantidad",
-            min_value=0,
-            max_value=10,
-            step=1,
-            key=f"cantidad_{key}"
-        )
+        if mostrar_boton:
+            cantidad = st.number_input(
+                "Cantidad",
+                min_value=1,
+                max_value=20,
+                value=1,
+                key=f"cantidad_{key}"
+            )
 
-        agregar_btn = st.button(
-            "Agregar al carrito",
-            key=f"btn_{key}"
-        )
+            agregar_btn = st.button(
+                "Agregar al carrito",
+                key=f"btn_{key}"
+            )
 
-    st.markdown("</div>", unsafe_allow_html=True)
+            return cantidad, agregar_btn
 
-    return cantidad, agregar_btn
+        else:
+            # Cuando no se muestra botón, devolvemos valores neutros
+            return 0, False
