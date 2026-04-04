@@ -4,10 +4,14 @@ import streamlit as st
 from modules.menu import mostrar_menu
 from modules.carrito import inicializar_carrito, agregar, mostrar_carrito
 from modules.whatsapp import generar_mensaje, generar_link_whatsapp
-from modules.estilos import banner
-from modules.tarjetas import tarjeta_producto
+from modules.estilo import banner
+from modules.tarjetas import tarjeta_producto, tarjeta_producto_hoy
 from modules.cliente import formulario_cliente
 from modules.config import TELEFONO_ELAFOOD
+
+
+import os
+
 
 # ------------------ NUEVO MÓDULO DEL CHEF ------------------
 from modules.chef_module import (
@@ -56,7 +60,10 @@ with tab1:
     productos_cat = productos_por_categoria()
 
     categoria = mostrar_menu()
-    st.subheader(f"Categoría: {categoria}")
+    st.markdown(
+    f"<h2 style='color:#7A1F1F;'>Categoría: {categoria}</h2>",
+    unsafe_allow_html=True
+)
 
     # Si la categoría NO está activa → no mostrar nada
     if not categorias_activas.get(categoria, False):
@@ -75,7 +82,7 @@ with tab1:
                 p = PRODUCTOS[pid]
 
                 key = f"{categoria}_{p['nombre']}"
-                cantidad, agregar_btn = tarjeta_producto(
+                cantidad, agregar_btn = tarjeta_producto_hoy(
                     p["nombre"],
                     p["precio"],
                     p["imagen"],
@@ -85,7 +92,7 @@ with tab1:
 
                 if agregar_btn and cantidad > 0:
                     agregar(p["nombre"], cantidad, p["precio"])
-                    st.success(f"{cantidad} x {p['nombre']} agregado(s) al carrito.")
+                    #st.success(f"{cantidad} x {p['nombre']} agregado(s) al carrito.")
 
     # CARRITO Y CLIENTE
     total = mostrar_carrito()
@@ -113,17 +120,18 @@ with tab1:
             st.sidebar.success("Pedido generado. Presione Enviar por WS.")
 
     if st.session_state.pedido_generado:
-        if st.sidebar.button("Enviar por WS", key="enviar_ws_btn"):
 
-            js = f"window.open('{st.session_state.link}', '_blank').focus();"
-            st.components.v1.html(f"<script>{js}</script>", height=0)
+        st.sidebar.markdown(
+            f"<a href='{st.session_state.link}' target='_blank' style='padding:12px; background:#25D366; color:white; border-radius:8px; text-decoration:none; display:block; text-align:center;'>📲 Enviar por WhatsApp</a>",
+            unsafe_allow_html=True
+        )
 
-            st.session_state.carrito = []
-            st.session_state.mensaje_generado = ""
-            st.session_state.link = ""
-            st.session_state.pedido_generado = False
-
-            st.sidebar.success("Listo. Puedes comenzar un nuevo pedido.")
+    if st.sidebar.button("Hacer nuevo pedido"):
+        st.session_state.carrito = []
+        st.session_state.mensaje_generado = ""
+        st.session_state.link = ""
+        st.session_state.pedido_generado = False
+        st.sidebar.success("Listo. Puedes comenzar un nuevo pedido.")
 
 
 # =========================================================

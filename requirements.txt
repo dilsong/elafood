@@ -1,2 +1,4 @@
 Pillow==12.1.1
 streamlit==1.53.1
+st-social-media-links==0.1.0
+streamlit-lottie==0.0.5

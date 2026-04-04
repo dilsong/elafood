@@ -25,9 +25,46 @@ def mostrar_carrito():
     st.sidebar.markdown("### 🛒 Carrito")
     total = 0
 
+    # Si el carrito está vacío
+    if len(st.session_state.carrito) == 0:
+        st.sidebar.write("Tu carrito está vacío.")
+        return 0
+
+    # Mostrar cada producto con botones + y -
     for item in st.session_state.carrito:
-        subtotal = item["precio"] * item["cantidad"]
-        st.sidebar.write(f"{item['cantidad']} x {item['producto']} - ${subtotal}")
+        producto = item["producto"]
+        cantidad = item["cantidad"]
+        precio = item["precio"]
+        subtotal = precio * cantidad
+
+        # Fila del producto
+        st.sidebar.write(f"**{producto}** - ${subtotal}")
+
+        # Botones ➖ cantidad ➕
+        col1, col2, col3 = st.sidebar.columns([1, 1, 1])
+
+        with col1:
+            menos = st.button("➖", key=f"menos_{producto}")
+
+        with col2:
+            st.write(f"{cantidad}")
+
+        with col3:
+            mas = st.button("➕", key=f"mas_{producto}")
+
+        # Lógica de sumar
+        if mas:
+            item["cantidad"] += 1
+            st.rerun()
+
+        # Lógica de restar
+        if menos:
+            if item["cantidad"] > 1:
+                item["cantidad"] -= 1
+            else:
+                st.session_state.carrito.remove(item)
+            st.rerun()
+
         total += subtotal
 
     st.sidebar.markdown(f"### Total: ${total}")
