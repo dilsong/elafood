@@ -7,7 +7,7 @@ from modules.whatsapp import generar_mensaje, generar_link_whatsapp
 from modules.estilo import banner, estilos_app
 from modules.tarjetas import tarjeta_producto, tarjeta_producto_hoy
 from modules.cliente import formulario_cliente
-from modules.config import TELEFONO_ELAFOOD
+from modules.config import TELEFONO_ELAFOOD, URL_SALIR_DESTINO
 from modules.productos import PRODUCTOS
 
 # ------------------ NUEVO MÓDULO DEL CHEF ------------------
@@ -32,6 +32,22 @@ st.markdown(
 # ---------------------------------------------------------
 # FIN: CONFIGURACIÓN INICIAL
 # ---------------------------------------------------------
+
+if "vista_salida" not in st.session_state:
+    st.session_state.vista_salida = False
+
+if st.session_state.vista_salida:
+    st.markdown(
+        "<h1 style='color:#7A1F1F;text-align:center;'>¡Gracias por visitar ElaFood!</h1>",
+        unsafe_allow_html=True,
+    )
+    st.info("Ya puedes **cerrar esta pestaña** del navegador o volver cuando quieras.")
+    if URL_SALIR_DESTINO and URL_SALIR_DESTINO.strip():
+        st.link_button("Seguir a ElaFood en redes / web →", URL_SALIR_DESTINO.strip())
+    if st.button("Volver a la tienda", type="primary"):
+        st.session_state.vista_salida = False
+        st.rerun()
+    st.stop()
 
 # Banner superior
 banner()
@@ -108,7 +124,10 @@ with tab1:
 
                 if agregar_btn and cantidad > 0:
                     agregar(p["nombre"], cantidad, p["precio"])
-                    #st.success(f"{cantidad} x {p['nombre']} agregado(s) al carrito.")
+                    st.toast(
+                        f"Listo: {cantidad}× {p['nombre']} en el carrito",
+                        icon="✅",
+                    )
 
     # CARRITO Y CLIENTE
     total = mostrar_carrito()
@@ -148,6 +167,11 @@ with tab1:
         st.session_state.link = ""
         st.session_state.pedido_generado = False
         st.sidebar.success("Listo. Puedes comenzar un nuevo pedido.")
+
+    st.sidebar.markdown("---")
+    if st.sidebar.button("🚪 Salir", use_container_width=True, help="Cierra el flujo y muestra despedida"):
+        st.session_state.vista_salida = True
+        st.rerun()
 
 
 # =========================================================

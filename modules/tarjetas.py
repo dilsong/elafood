@@ -76,21 +76,11 @@ def tarjeta_producto_hoy(nombre, precio, imagen, descripcion, key):
             key=f"cantidad_hoy_{key}"
         )
 
-        # Botón + check en la misma fila
-        bcol, ccol = st.columns([4, 1])
-
-        with bcol:
-            agregar_btn = st.button(
-                "Agregar al carrito",
-                key=f"btn_hoy_{key}"
-            )
-
-        with ccol:
-            if agregar_btn:
-                st.markdown(
-                    "<span style='font-size:24px; color:green;'>✔</span>",
-                    unsafe_allow_html=True
-                )
+        agregar_btn = st.button(
+            "Agregar al carrito",
+            key=f"btn_hoy_{key}",
+            use_container_width=True,
+        )
 
         return cantidad, agregar_btn
     

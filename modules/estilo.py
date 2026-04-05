@@ -52,13 +52,33 @@ def estilos_app():
             background-color: #5e1717 !important;
             color: #ffffff !important;
         }
-        /* Sidebar: mismos botones */
+        /* Sidebar: mismos botones; texto/ símbolos en blanco (carrito − / +) */
         section[data-testid="stSidebar"] [data-testid="stButton"] button,
         section[data-testid="stSidebar"] button[kind="secondary"],
         section[data-testid="stSidebar"] button[kind="primary"] {
             background-color: #7A1F1F !important;
             color: #ffffff !important;
             border: none !important;
+            font-weight: 600 !important;
+        }
+
+        /*
+         * Sidebar: evitar que las columnas del carrito (− cantidad +) se apilen en móvil.
+         * Streamlit suele poner flex-wrap: wrap en bloques estrechos.
+         */
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] {
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            align-items: center !important;
+        }
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            flex: 1 1 0 !important;
+            min-width: 0 !important;
+        }
+        /* Botones solo con signo: más grandes y bien visibles */
+        section[data-testid="stSidebar"] [data-testid="stButton"] button {
+            font-size: 1.35rem !important;
+            line-height: 1 !important;
         }
 
         @media (max-width: 768px) {
@@ -68,7 +88,6 @@ def estilos_app():
                 min-width: 44px !important;
                 font-size: 1.1rem !important;
             }
-            /* Carrito en sidebar: botones ➕ ➖ (mismo stButton) */
             section[data-testid="stSidebar"] [data-testid="stButton"] button {
                 min-height: 44px !important;
                 min-width: 44px !important;

@@ -53,17 +53,20 @@ def mostrar_carrito():
         # Fila del producto
         st.sidebar.write(f"**{producto}** - ${subtotal}")
 
-        # Botones ➖ cantidad ➕
-        col1, col2, col3 = st.sidebar.columns([1, 1, 1])
+        # Una fila: − | cantidad | +  (texto ASCII para buen contraste con fondo vino)
+        c_menos, c_num, c_mas = st.sidebar.columns([2, 2, 2])
 
-        with col1:
-            menos = st.button("➖", key=f"menos_{producto}")
+        with c_menos:
+            menos = st.button("−", key=f"menos_{producto}", use_container_width=True)
 
-        with col2:
-            st.write(f"{cantidad}")
+        with c_num:
+            st.markdown(
+                f"<div style='text-align:center;font-weight:700;font-size:1.1rem;padding:0.35rem 0;'>{cantidad}</div>",
+                unsafe_allow_html=True,
+            )
 
-        with col3:
-            mas = st.button("➕", key=f"mas_{producto}")
+        with c_mas:
+            mas = st.button("+", key=f"mas_{producto}", use_container_width=True)
 
         # Lógica de sumar
         if mas:
