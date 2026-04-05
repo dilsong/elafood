@@ -1,12 +1,15 @@
 import streamlit as st
 from PIL import Image
-import os
+from modules.imagenes import ruta_imagen
 
 
 def tarjeta_producto(nombre, precio, imagen, descripcion, key, mostrar_boton=True):
-    # Verificar si la imagen existe
-    if not os.path.exists(imagen):
-        imagen = "Imagenes/Logos/no_image.JPG"   # Imagen por defecto
+    # Convertir la ruta local a URL
+    imagen = ruta_imagen(imagen)
+
+    # Fallback también convertido a URL
+    if "no_image" in imagen.lower():
+        imagen = ruta_imagen("Imagenes/Logos/no_image.jpg")
 
     st.markdown(
         """
@@ -24,6 +27,7 @@ def tarjeta_producto(nombre, precio, imagen, descripcion, key, mostrar_boton=Tru
 
     with st.container():
         st.image(imagen, width=200)
+
         st.subheader(nombre)
         st.write(descripcion)
         st.write(f"**Precio:** ${precio}")
@@ -45,13 +49,16 @@ def tarjeta_producto(nombre, precio, imagen, descripcion, key, mostrar_boton=Tru
             return cantidad, agregar_btn
 
         else:
-            # Cuando no se muestra botón, devolvemos valores neutros
             return 0, False
-        
+
+
 def tarjeta_producto_hoy(nombre, precio, imagen, descripcion, key):
-    # Verificar si la imagen existe
-    if not os.path.exists(imagen):
-        imagen = "Imagenes/Logos/no_image.JPG"
+    # Convertir la ruta local a URL SIEMPRE
+    imagen = ruta_imagen(imagen)
+
+    # Fallback también convertido a URL
+    if "no_image" in imagen.lower():
+        imagen = ruta_imagen("Imagenes/Logos/no_image.jpg")
 
     # 3 columnas: imagen | nombre + descripción | precio + cantidad + botón + check
     col1, col2, col3 = st.columns([1, 2, 1])

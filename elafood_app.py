@@ -8,10 +8,9 @@ from modules.estilo import banner
 from modules.tarjetas import tarjeta_producto, tarjeta_producto_hoy
 from modules.cliente import formulario_cliente
 from modules.config import TELEFONO_ELAFOOD
-
+from modules.imagenes import ruta_imagen
 
 import os
-
 
 # ------------------ NUEVO MÓDULO DEL CHEF ------------------
 from modules.chef_module import (
@@ -60,8 +59,16 @@ with tab1:
     productos_cat = productos_por_categoria()
 
     categoria = mostrar_menu()
+
+    NOMBRES_BONITOS = {
+            "lunch": "Lunch",
+            "comida_rapida": "Comida Rápida",
+            "postres": "Postres",
+            "otros": "Otros"
+    }
+
     st.markdown(
-    f"<h2 style='color:#7A1F1F;'>Categoría: {categoria}</h2>",
+    f"<h2 style='color:#7A1F1F;'>Categoría: {NOMBRES_BONITOS.get(categoria, categoria)}</h2>",
     unsafe_allow_html=True
 )
 
@@ -85,7 +92,7 @@ with tab1:
                 cantidad, agregar_btn = tarjeta_producto_hoy(
                     p["nombre"],
                     p["precio"],
-                    p["imagen"],
+                    ruta_imagen(p["imagen"]),
                     p.get("descripcion", ""),
                     key
                 )
@@ -146,7 +153,7 @@ with tab2:
         tarjeta_producto(
             p["nombre"],
             p["precio"],
-            p["imagen"],
+            ruta_imagen(p["imagen"]),
             p.get("descripcion", ""),
             key,
             mostrar_boton=False  # Solo mostrar, no agregar al carrito
