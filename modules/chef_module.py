@@ -5,22 +5,39 @@ import streamlit as st
 from modules.productos import PRODUCTOS
 
 CONFIG_FILE = "data/config_menu.json"
-PIN_FILE = "data/chef_pin.secret"
-
 
 # -----------------------------
 # PIN
 # -----------------------------
+PIN_FILE = "data/chef_pin.secret"
+
 def cargar_pin() -> str:
-    if not os.path.exists(PIN_FILE):
-        return ""
-    with open(PIN_FILE, "r", encoding="utf-8") as f:
-        return f.read().strip()
+    """
+    Carga el PIN desde Secrets (nube) o desde archivo local (PC).
+    """
+    # 1. Intentar leer desde Secrets (solo existe en la nube)
+    try:
+        pin_cloud = st.secrets.get("PIN_CHEF", "").strip()
+        if pin_cloud:
+            return pin_cloud
+    except Exception:
+        pass  # No hay secrets en local
+
+    # 2. Si no hay Secrets, leer desde archivo local
+    if os.path.exists(PIN_FILE):
+        with open(PIN_FILE, "r", encoding="utf-8") as f:
+            return f.read().strip()
+
+    # 3. Si no existe nada, retornar vacío
+    return ""
 
 
 def validar_pin(pin_ingresado: str) -> bool:
     pin_real = cargar_pin()
     return pin_real != "" and pin_ingresado == pin_real
+# -----------------------------
+# FIN    PIN
+# -----------------------------
 
 
 # -----------------------------
