@@ -1,3 +1,5 @@
 streamlit run elafood_app.py
 streamlit run chef_app.py
 https://share.streamlit.io
+https://elafood-chef.streamlit.app
+https://elafood.streamlit.app

@@ -9,6 +9,7 @@ from modules.tarjetas import tarjeta_producto, tarjeta_producto_hoy
 from modules.cliente import formulario_cliente
 from modules.config import TELEFONO_ELAFOOD
 from modules.imagenes import ruta_imagen
+from modules.productos import PRODUCTOS
 
 import os
 
@@ -17,7 +18,7 @@ from modules.chef_module import (
     cargar_config_menu,
     productos_por_categoria
 )
-from modules.productos import PRODUCTOS
+
 
 
 # ---------------------------------------------------------
@@ -53,12 +54,14 @@ with tab1:
         st.session_state.pedido_generado = False
 
     # MENÚ DEL DÍA CONFIGURADO POR EL CHEF
+    # Primero obtenemos la categoría seleccionada
+    categoria = mostrar_menu()
+
+    # Luego recargamos el menú del Chef (si cambió, aquí se actualiza)
     config = cargar_config_menu()
     categorias_activas = config["categorias"]
     platos_activados = config["platos"]
     productos_cat = productos_por_categoria()
-
-    categoria = mostrar_menu()
 
     NOMBRES_BONITOS = {
             "lunch": "Lunch",

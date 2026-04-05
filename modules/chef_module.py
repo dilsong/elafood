@@ -135,20 +135,6 @@ no solo comes… te sientes en casa.
         """
     )
 
-    with st.expander("Acceso al Panel del Chef (PIN)"):
-        pin_ingresado = st.text_input("PIN del chef", type="password")
-        if st.button("Entrar"):
-            if validar_pin(pin_ingresado):
-                st.session_state.chef_pin_ok = True
-                st.success("Acceso concedido.")
-            else:
-                st.session_state.chef_pin_ok = False
-                st.error("PIN incorrecto.")
-
-    if not st.session_state.chef_pin_ok:
-        st.info("Introduce el PIN para configurar el menú del día.")
-        return
-
     st.markdown("---")
     st.subheader("Configuración del menú del día")
 
