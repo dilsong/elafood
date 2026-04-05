@@ -1,3 +1,6 @@
 chef_pin.secret
 chef_pin.secret.enc
 r.txt
+
+__pycache__/
+*.py[cod]

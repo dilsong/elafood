@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# ElaFood - Proyecto de Comida Casera
+# Módulo: estilo.py
+# Descripción: Contiene funciones para el diseño y estilo de la aplicación.
+
 import streamlit as st
 
 def banner():
@@ -55,3 +60,34 @@ def banner():
 
     # Cerrar contenedor
     st.markdown("</div>", unsafe_allow_html=True)
+
+# ESTILO PARA BOTONES PERSONALIZADOS
+st.markdown(
+    """
+    <style>
+    div.stButton > button {
+        background-color:#7A1F1F !important;
+        color:white !important;
+        padding:12px 28px !important;
+        border:none !important;
+        border-radius:8px !important;
+        font-size:18px !important;
+        cursor:pointer !important;
+    }
+    div.stButton > button:hover {
+        background-color:#5e1717 !important;
+        color:white !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+def boton_vino_tinto(texto, key=None):
+    return st.button(
+        texto,
+        key=key,
+        use_container_width=True,
+        help="Acceso restringido",
+    )
+

@@ -1,3 +1,5 @@
+# tarjetas.py: Funciones para mostrar tarjetas de productos en Streamlit
+
 import streamlit as st
 from PIL import Image
 from modules.imagenes import obtener_imagen
@@ -101,3 +103,48 @@ def tarjeta_producto_hoy(nombre, precio, imagen, descripcion, key):
                 )
 
         return cantidad, agregar_btn
+    
+
+def tarjeta_acerca_chef():
+    st.markdown(
+        """
+        <!-- FOTO OPCIONAL -->
+        <div style="text-align:center; margin-bottom:20px;">
+            <div style="
+                width:150px;
+                height:150px;
+                border-radius:50%;
+                border:3px solid #7A1F1F;
+                background-image: url('Imagenes/Logos/Logo minimalista Ela.png');
+                background-size:cover;
+                background-position:center;
+            ">            
+            </div>
+            <p style="color:#7A1F1F; font-size:13px; margin-top:8px;">
+                (Foto opcional — Ela prefiere el anonimato)
+            </p>
+        </div>
+
+        <p style="font-size:16px; line-height:1.6; color:#333;">
+            Nuestra chef prefiere el silencio a los reflectores.
+            Cocina como quien reza: en voz baja, con devoción.
+            <br><br>
+            Aprendió de su madre, entre aromas que no se olvidan,
+            y perfeccionó su sazón en cocinas de Ecuador,
+            pero su verdadero arte nació en casa,
+            alimentando a quienes ama.
+            <br><br>
+            No negocia con la frescura:
+            cada plato se prepara al momento,
+            cada postre vive apenas dos días,
+            porque la comida —dice ella—
+            tiene alma solo cuando es reciente.
+            <br><br>
+            Sus recetas son familiares, honestas,
+            hechas con manos que conocen el cariño.
+            Por eso, cuando pruebas su comida,
+            no solo comes… te sientes en casa.
+        </p>
+        """,
+        unsafe_allow_html=True
+    )

@@ -1,4 +1,6 @@
 import streamlit as st
+from modules.imagenes import obtener_imagen
+
 
 def inicializar_carrito():
     if "carrito" not in st.session_state:
@@ -22,7 +24,18 @@ def vaciar_carrito():
     st.session_state.carrito = []
 
 def mostrar_carrito():
-    st.sidebar.markdown("### 🛒 Carrito")
+    #st.sidebar.image("Imagenes/Logos/carrito.jpeg", width=40)
+    col1, col2 = st.sidebar.columns([1, 3])
+
+    with col1:
+        carrito_icono = obtener_imagen("Imagenes/Logos/carrito.jpeg")
+        st.image(carrito_icono, width=60)
+    with col2:
+        st.markdown(
+            "<div style='margin-top: 18px; font-size: 18px; font-weight: bold;'>Carrito</div>",
+            unsafe_allow_html=True
+        )
+    #st.sidebar.markdown("### Carrito")
     total = 0
 
     # Si el carrito está vacío

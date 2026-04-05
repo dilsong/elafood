@@ -2,7 +2,7 @@ import streamlit as st
 
 # ------------------ TUS MÓDULOS EXISTENTES ------------------
 from modules.menu import mostrar_menu
-from modules.carrito import inicializar_carrito, agregar, mostrar_carrito
+from modules.carrito import agregar, mostrar_carrito
 from modules.whatsapp import generar_mensaje, generar_link_whatsapp
 from modules.estilo import banner
 from modules.tarjetas import tarjeta_producto, tarjeta_producto_hoy
@@ -11,15 +11,11 @@ from modules.config import TELEFONO_ELAFOOD
 from modules.imagenes import ruta_imagen
 from modules.productos import PRODUCTOS
 
-import os
-
 # ------------------ NUEVO MÓDULO DEL CHEF ------------------
 from modules.chef_module import (
     cargar_config_menu,
     productos_por_categoria
 )
-
-
 
 # ---------------------------------------------------------
 # CONFIGURACIÓN INICIAL
@@ -67,9 +63,6 @@ with tab1:
     # MENÚ DEL DÍA CONFIGURADO POR EL CHEF
     # Primero obtenemos la categoría seleccionada
     categoria = mostrar_menu()
-
-    # Luego recargamos el menú del Chef (si cambió, aquí se actualiza)
-    st.session_state._reload_key = os.urandom(4)
 
     config = cargar_config_menu()
     categorias_activas = config["categorias"]

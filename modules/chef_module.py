@@ -1,3 +1,4 @@
+# chef_module.py
 import json
 import os
 from datetime import date
@@ -110,33 +111,9 @@ def vista_panel_chef():
     if "chef_pin_ok" not in st.session_state:
         st.session_state.chef_pin_ok = False
 
-    st.subheader("Acerca del Chef")
-
-    st.markdown(
-        """
-Nuestra chef prefiere el silencio a los reflectores.  
-Cocina como quien reza: en voz baja, con devoción.
-
-Aprendió de su madre, entre aromas que no se olvidan,  
-y perfeccionó su sazón en cocinas de Ecuador,  
-pero su verdadero arte nació en casa,  
-alimentando a quienes ama.
-
-No negocia con la frescura:  
-cada plato se prepara al momento,  
-cada postre vive apenas dos días,  
-porque la comida —dice ella—  
-tiene alma solo cuando es reciente.
-
-Sus recetas son familiares, honestas,  
-hechas con manos que conocen el cariño.  
-Por eso, cuando pruebas su comida,  
-no solo comes… te sientes en casa.
-        """
-    )
+    st.subheader("Configuración del menú del día")
 
     st.markdown("---")
-    st.subheader("Configuración del menú del día")
 
     config = cargar_config_menu()
 
