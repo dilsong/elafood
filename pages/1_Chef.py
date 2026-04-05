@@ -1,12 +1,13 @@
 import streamlit as st
 from modules.chef_module import validar_pin, vista_panel_chef
 from modules.tarjetas import tarjeta_acerca_chef
-from modules.estilo import boton_vino_tinto
+from modules.estilo import boton_vino_tinto, estilos_app
 
 st.set_page_config(
     page_title="Panel del Chef – ElaFood",
-    layout="wide"
+    layout="centered",
 )
+estilos_app()
 
 st.markdown(
     """

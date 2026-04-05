@@ -8,16 +8,16 @@
   },
   "platos": {
     "lunch": [
-      "produ_001"
+      "produ_002"
     ],
     "comida_rapida": [
-      "produ_004"
+      "produ_003"
     ],
     "postres": [
-      "produ_006"
+      "produ_005"
     ],
     "otros": [
-      "produ_008"
+      "produ_009"
     ]
   }
 }

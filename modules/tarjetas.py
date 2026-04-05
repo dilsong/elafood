@@ -1,17 +1,12 @@
 # tarjetas.py: Funciones para mostrar tarjetas de productos en Streamlit
 
 import streamlit as st
-from PIL import Image
-from modules.imagenes import obtener_imagen
+from modules.imagenes import obtener_imagen, obtener_imagen_plato, src_para_html
 
 
 def tarjeta_producto(nombre, precio, imagen, descripcion, key, mostrar_boton=True):
     # Convertir la ruta local a URL
-    imagen = obtener_imagen(imagen)
-
-    # Fallback también convertido a URL
-    if "no_image" in imagen.lower():
-        imagen = obtener_imagen("Imagenes/Logos/no_image.jpg")
+    imagen = obtener_imagen_plato(imagen)
 
     st.markdown(
         """
@@ -55,12 +50,7 @@ def tarjeta_producto(nombre, precio, imagen, descripcion, key, mostrar_boton=Tru
 
 
 def tarjeta_producto_hoy(nombre, precio, imagen, descripcion, key):
-    # Convertir la ruta local a URL SIEMPRE
-    imagen = obtener_imagen(imagen)
-
-    # Fallback también convertido a URL
-    if "no_image" in imagen.lower():
-        imagen = obtener_imagen("Imagenes/Logos/no_image.jpg")
+    imagen = obtener_imagen_plato(imagen)
 
     # 3 columnas: imagen | nombre + descripción | precio + cantidad + botón + check
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -105,25 +95,30 @@ def tarjeta_producto_hoy(nombre, precio, imagen, descripcion, key):
         return cantidad, agregar_btn
     
 
+# Ruta del logo/foto opcional en Panel Chef (mismo archivo en disco o en GitHub raw)
+RUTA_LOGO_CHEF_OPCIONAL = "Imagenes/Logos/Logo minimalista Ela.png"
+
+
 def tarjeta_acerca_chef():
+    src_logo = src_para_html(RUTA_LOGO_CHEF_OPCIONAL)
+
     st.markdown(
-        """
-        <!-- FOTO OPCIONAL -->
-        <div style="text-align:center; margin-bottom:20px;">
+        f"""
+        <div style="display:flex;justify-content:center;width:100%;margin-bottom:12px;">
             <div style="
                 width:150px;
                 height:150px;
                 border-radius:50%;
+                overflow:hidden;
                 border:3px solid #7A1F1F;
-                background-image: url('Imagenes/Logos/Logo minimalista Ela.png');
-                background-size:cover;
-                background-position:center;
-            ">            
+                flex-shrink:0;
+            ">
+                <img src="{src_logo}" alt="ElaFood" style="width:100%;height:100%;object-fit:cover;display:block;" />
             </div>
-            <p style="color:#7A1F1F; font-size:13px; margin-top:8px;">
-                (Foto opcional — Ela prefiere el anonimato)
-            </p>
         </div>
+        <p style="color:#7A1F1F; font-size:13px; text-align:center; margin-top:8px; margin-bottom:20px;">
+            (Foto opcional — Ela prefiere el anonimato)
+        </p>
 
         <p style="font-size:16px; line-height:1.6; color:#333;">
             Nuestra chef prefiere el silencio a los reflectores.
@@ -146,5 +141,5 @@ def tarjeta_acerca_chef():
             no solo comes… te sientes en casa.
         </p>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )

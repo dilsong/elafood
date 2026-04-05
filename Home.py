@@ -4,11 +4,10 @@ import streamlit as st
 from modules.menu import mostrar_menu
 from modules.carrito import agregar, mostrar_carrito
 from modules.whatsapp import generar_mensaje, generar_link_whatsapp
-from modules.estilo import banner
+from modules.estilo import banner, estilos_app
 from modules.tarjetas import tarjeta_producto, tarjeta_producto_hoy
 from modules.cliente import formulario_cliente
 from modules.config import TELEFONO_ELAFOOD
-from modules.imagenes import ruta_imagen
 from modules.productos import PRODUCTOS
 
 # ------------------ NUEVO MÓDULO DEL CHEF ------------------
@@ -22,9 +21,10 @@ from modules.chef_module import (
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="ElaFood",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="centered",
+    initial_sidebar_state="collapsed",
 )
+estilos_app()
 st.markdown(
     "<meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'>",
     unsafe_allow_html=True
@@ -101,7 +101,7 @@ with tab1:
                 cantidad, agregar_btn = tarjeta_producto_hoy(
                     p["nombre"],
                     p["precio"],
-                    ruta_imagen(p["imagen"]),
+                    p["imagen"],
                     p.get("descripcion", ""),
                     key
                 )
@@ -162,7 +162,7 @@ with tab2:
         tarjeta_producto(
             p["nombre"],
             p["precio"],
-            ruta_imagen(p["imagen"]),
+            p["imagen"],
             p.get("descripcion", ""),
             key,
             mostrar_boton=False  # Solo mostrar, no agregar al carrito
