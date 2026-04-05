@@ -20,3 +20,19 @@ def ruta_imagen(ruta_local):
 
     # Construir URL final
     return GITHUB_BASE + ruta_local
+
+URL_FALLBACK = "https://raw.githubusercontent.com/dilsong/elafood/main/Imagenes/Logos/no_image.jpg"
+
+def obtener_imagen(ruta_local):
+    # Si está vacía, None o con espacios → fallback
+    if not ruta_local or not ruta_local.strip():
+        return URL_FALLBACK
+
+    # Convertir a URL
+    url = ruta_imagen(ruta_local)
+
+    # Si la ruta convertida apunta a no_image → fallback
+    if "no_image" in url.lower():
+        return URL_FALLBACK
+
+    return url

@@ -1,15 +1,15 @@
 import streamlit as st
 from PIL import Image
-from modules.imagenes import ruta_imagen
+from modules.imagenes import obtener_imagen
 
 
 def tarjeta_producto(nombre, precio, imagen, descripcion, key, mostrar_boton=True):
     # Convertir la ruta local a URL
-    imagen = ruta_imagen(imagen)
+    imagen = obtener_imagen(imagen)
 
     # Fallback también convertido a URL
     if "no_image" in imagen.lower():
-        imagen = ruta_imagen("Imagenes/Logos/no_image.jpg")
+        imagen = obtener_imagen("Imagenes/Logos/no_image.jpg")
 
     st.markdown(
         """
@@ -54,11 +54,11 @@ def tarjeta_producto(nombre, precio, imagen, descripcion, key, mostrar_boton=Tru
 
 def tarjeta_producto_hoy(nombre, precio, imagen, descripcion, key):
     # Convertir la ruta local a URL SIEMPRE
-    imagen = ruta_imagen(imagen)
+    imagen = obtener_imagen(imagen)
 
     # Fallback también convertido a URL
     if "no_image" in imagen.lower():
-        imagen = ruta_imagen("Imagenes/Logos/no_image.jpg")
+        imagen = obtener_imagen("Imagenes/Logos/no_image.jpg")
 
     # 3 columnas: imagen | nombre + descripción | precio + cantidad + botón + check
     col1, col2, col3 = st.columns([1, 2, 1])
