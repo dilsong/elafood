@@ -5,7 +5,7 @@
 
 import streamlit as st
 
-from modules.imagenes import obtener_imagen
+from modules.imagenes import src_para_html
 
 
 def estilos_app():
@@ -81,60 +81,112 @@ def estilos_app():
 
 
 def banner():
-    # Contenedor principal vino tinto
+    """
+    Un solo bloque HTML: en Streamlit, st.columns NO quedan dentro del <div> de un
+    st.markdown anterior, así que el fondo vino no cubría logo ni enlaces. Aquí todo va junto.
+    """
+    logo_src = src_para_html("Imagenes/Logos/logo.jpg")
+
     st.markdown(
-        """
-        <div style="
-            width: 100%;
-            background-color: #7A1F1F;
-            padding: 20px;
-            border-radius: 10px;
-        ">
+        f"""
+        <style>
+            .elafood-banner {{
+                width: 100%;
+                background-color: #7A1F1F;
+                padding: 18px 16px;
+                border-radius: 10px;
+                box-sizing: border-box;
+            }}
+            .elafood-banner-inner {{
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px 24px;
+                max-width: 1100px;
+                margin: 0 auto;
+            }}
+            .elafood-banner-logo img {{
+                display: block;
+                width: 120px;
+                height: 120px;
+                object-fit: cover;
+                border-radius: 50%;
+                border: 3px solid rgba(255,255,255,0.35);
+            }}
+            .elafood-banner-title {{
+                color: #FFFFFF;
+                font-size: clamp(1.5rem, 4vw, 2rem);
+                font-weight: 700;
+                line-height: 1.2;
+                margin: 0;
+            }}
+            .elafood-banner-tagline {{
+                color: #FFF8F0;
+                font-size: clamp(0.9rem, 2.5vw, 1rem);
+                margin: 4px 0 0 0;
+                opacity: 0.95;
+            }}
+            .elafood-banner-mid {{
+                flex: 1 1 200px;
+                min-width: 160px;
+            }}
+            .elafood-banner-social {{
+                flex: 1 1 240px;
+                text-align: right;
+                color: #FFF8F0;
+                font-size: 14px;
+                line-height: 1.5;
+            }}
+            .elafood-banner-social a {{
+                color: #FFFFFF !important;
+                font-weight: 600;
+                text-decoration: underline;
+                text-underline-offset: 2px;
+            }}
+            .elafood-banner-social a:hover {{
+                color: #FFD6D6 !important;
+            }}
+            .elafood-banner-social strong {{
+                color: #FFFFFF;
+            }}
+            @media (max-width: 768px) {{
+                .elafood-banner-inner {{
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                }}
+                .elafood-banner-social {{
+                    text-align: center;
+                }}
+            }}
+        </style>
+        <div class="elafood-banner">
+            <div class="elafood-banner-inner">
+                <div class="elafood-banner-logo">
+                    <img src="{logo_src}" alt="ElaFood" />
+                </div>
+                <div class="elafood-banner-mid">
+                    <p class="elafood-banner-title">ElaFood</p>
+                    <p class="elafood-banner-tagline">Food made with love</p>
+                </div>
+                <div class="elafood-banner-social">
+                    <strong>Síguenos:</strong><br />
+                    <a href="https://instagram.com/elafood" target="_blank" rel="noopener noreferrer">Instagram</a>
+                    &nbsp;|&nbsp;
+                    <a href="https://facebook.com/elafood" target="_blank" rel="noopener noreferrer">Facebook</a>
+                    &nbsp;|&nbsp;
+                    <a href="https://wa.me/17862361031" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                    <br /><br />
+                    <strong>Acerca de:</strong><br />
+                    ElaFood es un proyecto familiar creado con amor para ofrecer comida casera,
+                    fresca y deliciosa.
+                </div>
+            </div>
+        </div>
         """,
         unsafe_allow_html=True,
     )
-
-    # Tres columnas: logo | texto | redes + acerca de
-    col1, col2, col3 = st.columns([1, 2, 2])
-
-    # ------------------ COL 1: LOGO ------------------
-    with col1:
-        st.image(obtener_imagen("Imagenes/Logos/logo.jpg"), width=120)
-
-    # ------------------ COL 2: TÍTULO Y ESLOGAN ------------------
-    with col2:
-        st.markdown(
-            """
-            <div style="color: #FFFFFF; font-size: 32px; font-weight: bold;">
-                ElaFood
-            </div>
-            <div style="color: #F5E6E6; font-size: 16px; margin-top: -10px;">
-                Food made with love
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    # ------------------ COL 3: REDES + ACERCA DE ------------------
-    with col3:
-        st.markdown(
-            """
-            <div style="text-align: right; color: #F5E6E6; font-size: 14px;">
-                <b>Síguenos:</b><br>
-                <a href="https://instagram.com/elafood" target="_blank" style="color:#FFFFFF;">Instagram</a> |
-                <a href="https://facebook.com/elafood" target="_blank" style="color:#FFFFFF;">Facebook</a> |
-                <a href="https://wa.me/17862361031" target="_blank" style="color:#FFFFFF;">WhatsApp</a>
-                <br><br>
-                <b>Acerca de:</b><br>
-                ElaFood es un proyecto familiar creado con amor para ofrecer comida casera,
-                fresca y deliciosa.
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    # Cerrar contenedor
-    st.markdown("</div>", unsafe_allow_html=True)
 
 
 def boton_vino_tinto(texto, key=None):
