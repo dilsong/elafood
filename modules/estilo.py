@@ -80,14 +80,9 @@ def estilos_app():
             padding: 4px 6px !important;
         }
 
-        /* Cabecera carrito (icono + título): una sola fila en sidebar estrecho */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] {
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            align-items: center !important;
-        }
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-            min-width: 0 !important;
+        /* Quita el adorno gráfico de Streamlit arriba a la derecha (no el menú completo). */
+        [data-testid="stDecoration"] {
+            display: none !important;
         }
 
         @media (max-width: 768px) {

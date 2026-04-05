@@ -46,17 +46,9 @@ def _sync_cantidad_linea(nombre_producto: str, state_key: str):
 
 
 def mostrar_carrito():
-    col1, col2 = st.sidebar.columns([1, 3])
-
-    with col1:
-        carrito_icono = obtener_imagen("Imagenes/Logos/carrito.jpeg")
-        st.image(carrito_icono, width=48)
-
-    with col2:
-        st.markdown(
-            "<div style='margin-top: 14px; font-size: 16px; font-weight: bold;'>Carrito</div>",
-            unsafe_allow_html=True,
-        )
+    # Solo icono: dos columnas + CSS global del sidebar hacían que el texto “Carrito” se saliera del panel en móvil.
+    carrito_icono = obtener_imagen("Imagenes/Logos/carrito.jpeg")
+    st.sidebar.image(carrito_icono, width=40)
 
     total = 0
 

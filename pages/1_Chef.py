@@ -2,12 +2,24 @@ import streamlit as st
 from modules.chef_module import validar_pin, vista_panel_chef
 from modules.tarjetas import tarjeta_acerca_chef
 from modules.estilo import boton_vino_tinto, estilos_app
+from modules.config import RUTA_ICONO_APP
 
 st.set_page_config(
     page_title="Panel del Chef – ElaFood",
     layout="centered",
+    page_icon=RUTA_ICONO_APP,
+    menu_items={
+        "Get Help": None,
+        "Report a bug": None,
+        "About": None,
+    },
 )
 estilos_app()
+if hasattr(st, "logo"):
+    try:
+        st.logo(RUTA_ICONO_APP)
+    except Exception:
+        pass
 
 st.markdown(
     """

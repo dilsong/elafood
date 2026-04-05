@@ -7,7 +7,7 @@ from modules.whatsapp import generar_mensaje, generar_link_whatsapp
 from modules.estilo import banner, estilos_app
 from modules.tarjetas import tarjeta_producto, tarjeta_producto_hoy
 from modules.cliente import formulario_cliente
-from modules.config import TELEFONO_ELAFOOD, URL_SALIR_DESTINO
+from modules.config import TELEFONO_ELAFOOD, URL_SALIR_DESTINO, RUTA_ICONO_APP
 from modules.productos import PRODUCTOS
 
 # ------------------ NUEVO MÓDULO DEL CHEF ------------------
@@ -23,12 +23,23 @@ st.set_page_config(
     page_title="ElaFood",
     layout="centered",
     initial_sidebar_state="collapsed",
+    page_icon=RUTA_ICONO_APP,
+    menu_items={
+        "Get Help": None,
+        "Report a bug": None,
+        "About": None,
+    },
 )
 estilos_app()
 st.markdown(
     "<meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'>",
     unsafe_allow_html=True
 )
+if hasattr(st, "logo"):
+    try:
+        st.logo(RUTA_ICONO_APP)
+    except Exception:
+        pass
 # ---------------------------------------------------------
 # FIN: CONFIGURACIÓN INICIAL
 # ---------------------------------------------------------

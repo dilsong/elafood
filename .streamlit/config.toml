@@ -1,0 +1,4 @@
+# https://docs.streamlit.io/develop/concepts/configuration/options
+# Barra superior más discreta (menos iconos por defecto).
+[client]
+toolbarMode = "minimal"
