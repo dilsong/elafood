@@ -58,6 +58,8 @@ with tab1:
     categoria = mostrar_menu()
 
     # Luego recargamos el menú del Chef (si cambió, aquí se actualiza)
+    st.session_state._reload_key = os.urandom(4)
+
     config = cargar_config_menu()
     categorias_activas = config["categorias"]
     platos_activados = config["platos"]
