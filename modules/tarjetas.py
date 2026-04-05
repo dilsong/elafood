@@ -33,7 +33,7 @@ def tarjeta_producto(nombre, precio, imagen, descripcion, key, mostrar_boton=Tru
             cantidad = st.number_input(
                 "Cantidad",
                 min_value=1,
-                max_value=20,
+                max_value=99,
                 value=1,
                 key=f"cantidad_{key}"
             )
@@ -71,7 +71,7 @@ def tarjeta_producto_hoy(nombre, precio, imagen, descripcion, key):
         cantidad = st.number_input(
             "Cantidad",
             min_value=1,
-            max_value=20,
+            max_value=99,
             value=1,
             key=f"cantidad_hoy_{key}"
         )

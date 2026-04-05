@@ -12,8 +12,7 @@ def estilos_app():
     """
     Debe llamarse justo después de st.set_page_config (nunca en import del módulo).
 
-    Incluye: layout móvil, botones (selectores compatibles con Streamlit 1.5x),
-    banner apilado en pantallas estrechas, controles del carrito más táctiles.
+    Incluye: layout móvil, botones (Streamlit 1.5x), carrito compacto en sidebar.
     """
     st.markdown(
         """
@@ -52,7 +51,7 @@ def estilos_app():
             background-color: #5e1717 !important;
             color: #ffffff !important;
         }
-        /* Sidebar: mismos botones; texto/ símbolos en blanco (carrito − / +) */
+        /* Sidebar: botones (Generar pedido, Salir, Vaciar…) — compactos, sin forzar alturas grandes */
         section[data-testid="stSidebar"] [data-testid="stButton"] button,
         section[data-testid="stSidebar"] button[kind="secondary"],
         section[data-testid="stSidebar"] button[kind="primary"] {
@@ -60,37 +59,42 @@ def estilos_app():
             color: #ffffff !important;
             border: none !important;
             font-weight: 600 !important;
+            padding: 8px 14px !important;
+            font-size: 15px !important;
         }
 
-        /*
-         * Sidebar: evitar que las columnas del carrito (− cantidad +) se apilen en móvil.
-         * Streamlit suele poner flex-wrap: wrap en bloques estrechos.
-         */
+        /* Carrito: number_input delgado; no inflar el sidebar */
+        section[data-testid="stSidebar"] [data-testid="stNumberInput"] {
+            margin-top: 0 !important;
+            margin-bottom: 0.35rem !important;
+        }
+        section[data-testid="stSidebar"] [data-testid="stNumberInput"] button {
+            min-height: 28px !important;
+            min-width: 28px !important;
+            max-height: 32px !important;
+            padding: 0 6px !important;
+            font-size: 0.9rem !important;
+        }
+        section[data-testid="stSidebar"] [data-testid="stNumberInput"] input {
+            font-size: 0.95rem !important;
+            padding: 4px 6px !important;
+        }
+
+        /* Cabecera carrito (icono + título): una sola fila en sidebar estrecho */
         section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] {
             flex-direction: row !important;
             flex-wrap: nowrap !important;
             align-items: center !important;
         }
         section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-            flex: 1 1 0 !important;
             min-width: 0 !important;
-        }
-        /* Botones solo con signo: más grandes y bien visibles */
-        section[data-testid="stSidebar"] [data-testid="stButton"] button {
-            font-size: 1.35rem !important;
-            line-height: 1 !important;
         }
 
         @media (max-width: 768px) {
-            /* number_input (cantidad en platos) */
-            [data-testid="stNumberInput"] button {
-                min-height: 44px !important;
-                min-width: 44px !important;
-                font-size: 1.1rem !important;
-            }
-            section[data-testid="stSidebar"] [data-testid="stButton"] button {
-                min-height: 44px !important;
-                min-width: 44px !important;
+            /* Cantidad en fichas de platos (área principal): táctil cómodo */
+            section.main [data-testid="stNumberInput"] button {
+                min-height: 30px !important;
+                min-width: 30px !important;
             }
         }
         </style>
