@@ -24,7 +24,18 @@ from modules.chef_module import (
 # ---------------------------------------------------------
 # CONFIGURACIÓN INICIAL
 # ---------------------------------------------------------
-st.set_page_config(page_title="ElaFood", layout="wide")
+st.set_page_config(
+    page_title="ElaFood",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+st.markdown(
+    "<meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'>",
+    unsafe_allow_html=True
+)
+# ---------------------------------------------------------
+# FIN: CONFIGURACIÓN INICIAL
+# ---------------------------------------------------------
 
 # Banner superior
 banner()
