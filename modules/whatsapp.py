@@ -1,7 +1,18 @@
 import urllib.parse
 
+from modules.menu_semana import etiqueta_dia
+from modules.productos import es_comida_lunch_o_rapida_por_nombre
+
+
+def _nombre_linea_pedido(item: dict) -> str:
+    producto = item["producto"]
+    dia = item.get("dia")
+    if dia and es_comida_lunch_o_rapida_por_nombre(producto):
+        return f"{etiqueta_dia(dia)} — {producto}"
+    return producto
+
+
 def generar_mensaje(carrito, total, cliente):
-    # MENSAJE LIMPIO (sin codificar)
     mensaje = "Pedido ElaFood:\n\n"
 
     mensaje += f"Cliente: {cliente['nombre']}\n"
@@ -10,7 +21,8 @@ def generar_mensaje(carrito, total, cliente):
     mensaje += f"Notas: {cliente['notas']}\n\n"
 
     for item in carrito:
-        linea = f"- {item['cantidad']} x {item['producto']} = ${item['precio'] * item['cantidad']}"
+        nombre = _nombre_linea_pedido(item)
+        linea = f"- {item['cantidad']} x {nombre} = ${item['precio'] * item['cantidad']}"
         mensaje += linea + "\n"
 
     mensaje += f"\nTotal: ${total}"

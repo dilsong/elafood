@@ -5,7 +5,14 @@
 
 import streamlit as st
 
-from modules.imagenes import src_para_html
+from modules.imagenes import obtener_imagen, src_para_html
+
+from modules.config import (
+    RUTA_IMAGEN_PORTADA,
+    URL_FACEBOOK,
+    URL_INSTAGRAM,
+    URL_WHATSAPP,
+)
 
 
 def estilos_app():
@@ -85,6 +92,16 @@ def estilos_app():
             display: none !important;
         }
 
+        /* Pestañas principales (Esta Semana! / Menú) */
+        .stTabs [data-baseweb="tab"] {
+            font-size: 1.2rem !important;
+            font-weight: 600 !important;
+        }
+        div[data-testid="stTabs"] button[data-baseweb="tab"] {
+            font-size: 1.2rem !important;
+            font-weight: 600 !important;
+        }
+
         @media (max-width: 768px) {
             /* Cantidad en fichas de platos (área principal): táctil cómodo */
             section.main [data-testid="stNumberInput"] button {
@@ -98,12 +115,31 @@ def estilos_app():
     )
 
 
+def cabecera_portada():
+    """
+    Imagen principal + redes; debajo van las pestañas (Streamlit) en Home.
+    """
+    st.image(obtener_imagen(RUTA_IMAGEN_PORTADA), use_container_width=True)
+    st.markdown(
+        f"""
+        <div class="elafood-redes" style="text-align:center;margin:10px 0 6px 0;font-size:18px;">
+            <a href="{URL_INSTAGRAM}" target="_blank" rel="noopener noreferrer" style="color:#7A1F1F;font-weight:600;">Instagram</a>
+            &nbsp;|&nbsp;
+            <a href="{URL_FACEBOOK}" target="_blank" rel="noopener noreferrer" style="color:#7A1F1F;font-weight:600;">Facebook</a>
+            &nbsp;|&nbsp;
+            <a href="{URL_WHATSAPP}" target="_blank" rel="noopener noreferrer" style="color:#7A1F1F;font-weight:600;">WhatsApp</a>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def banner():
     """
     Un solo bloque HTML: en Streamlit, st.columns NO quedan dentro del <div> de un
     st.markdown anterior, así que el fondo vino no cubría logo ni enlaces. Aquí todo va junto.
     """
-    logo_src = src_para_html("Imagenes/Logos/logo.jpg")
+    logo_src = src_para_html("Imagenes/Logos/IMG_5894.jpg")
 
     st.markdown(
         f"""

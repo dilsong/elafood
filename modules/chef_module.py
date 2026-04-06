@@ -1,169 +1,107 @@
 # chef_module.py
-import json
 import os
-from datetime import date
+
 import streamlit as st
-from modules.productos import PRODUCTOS
 
-CONFIG_FILE = "data/config_menu.json"
-
+from modules.menu_semana import (
+    DIAS_ORDEN,
+    ETIQUETA_DIA,
+    cargar_menu_semana,
+    guardar_menu_semana,
+    ids_opcion_comidas,
+    ids_opcion_otros,
+    ids_opcion_postres,
+    menu_semana_por_defecto,
+    nombre_producto,
+)
 # -----------------------------
 # PIN
 # -----------------------------
 PIN_FILE = "data/chef_pin.secret"
 
+
 def cargar_pin() -> str:
-    """
-    Carga el PIN desde Secrets (nube) o desde archivo local (PC).
-    """
-    # 1. Intentar leer desde Secrets (solo existe en la nube)
     try:
         pin_cloud = st.secrets.get("PIN_CHEF", "").strip()
         if pin_cloud:
             return pin_cloud
     except Exception:
-        pass  # No hay secrets en local
+        pass
 
-    # 2. Si no hay Secrets, leer desde archivo local
     if os.path.exists(PIN_FILE):
         with open(PIN_FILE, "r", encoding="utf-8") as f:
             return f.read().strip()
 
-    # 3. Si no existe nada, retornar vacío
     return ""
 
 
 def validar_pin(pin_ingresado: str) -> bool:
     pin_real = cargar_pin()
     return pin_real != "" and pin_ingresado == pin_real
-# -----------------------------
-# FIN    PIN
-# -----------------------------
 
 
 # -----------------------------
-# CONFIG MENU (con autocorrección)
-# -----------------------------
-def config_menu_por_defecto() -> dict:
-    return {
-        "fecha_menu": str(date.today()),
-        "categorias": {
-            "lunch": False,
-            "comida_rapida": False,
-            "postres": False,
-            "otros": False,
-        },
-        "platos": {
-            "lunch": [],
-            "comida_rapida": [],
-            "postres": [],
-            "otros": [],
-        },
-    }
-
-
-def cargar_config_menu() -> dict:
-    # Si el archivo no existe o está vacío → crear uno nuevo
-    if not os.path.exists(CONFIG_FILE) or os.path.getsize(CONFIG_FILE) == 0:
-        config = config_menu_por_defecto()
-        guardar_config_menu(config)
-        return config
-
-    # Intentar cargar el JSON
-    try:
-        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-
-    except (json.JSONDecodeError, ValueError):
-        # Si está corrupto → regenerarlo
-        config = config_menu_por_defecto()
-        guardar_config_menu(config)
-        return config
-
-
-def guardar_config_menu(config: dict) -> None:
-    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-        json.dump(config, f, ensure_ascii=False, indent=2)
-
-
-def reiniciar_menu() -> dict:
-    config = config_menu_por_defecto()
-    guardar_config_menu(config)
-    return config
-
-
-# -----------------------------
-# Productos por categoría
-# -----------------------------
-def productos_por_categoria() -> dict:
-    cat_map = {"lunch": [], "comida_rapida": [], "postres": [], "otros": []}
-    for pid, data in PRODUCTOS.items():
-        cat = data["categoria"]
-        if cat in cat_map:
-            cat_map[cat].append((pid, data["nombre"]))
-    return cat_map
-
-
-# -----------------------------
-# Vista del Panel del Chef
+# Panel: menú semanal (grilla día × Comidas / Postres / Otros)
 # -----------------------------
 def vista_panel_chef():
     if "chef_pin_ok" not in st.session_state:
         st.session_state.chef_pin_ok = False
 
-    st.subheader("Configuración del menú del día")
+    st.subheader("Menú de la semana")
+    st.caption(
+        "Por cada día elige qué ofrecerás. **Comidas** agrupa Lunch y Comida rápida. "
+        "Sin fechas: la semana es siempre la misma plantilla hasta que la cambies."
+    )
 
     st.markdown("---")
 
-    config = cargar_config_menu()
+    config = cargar_menu_semana()
+    opts_c = ids_opcion_comidas()
+    opts_p = ids_opcion_postres()
+    opts_o = ids_opcion_otros()
 
-    # Fecha
-    fecha_actual = date.fromisoformat(config["fecha_menu"])
-    nueva_fecha = st.date_input("Fecha del menú", value=fecha_actual)
-    config["fecha_menu"] = str(nueva_fecha)
+    tab_labels = [ETIQUETA_DIA[d][:3] + "." for d in DIAS_ORDEN]
+    tabs = st.tabs(tab_labels)
 
-    st.markdown("### Categorías disponibles")
-    categorias = config["categorias"]
+    for i, dia in enumerate(DIAS_ORDEN):
+        with tabs[i]:
+            st.markdown(f"### {ETIQUETA_DIA[dia]}")
+            bloque = config["dias"][dia]
 
-    col1, col2 = st.columns(2)
-    with col1:
-        categorias["lunch"] = st.checkbox("Lunch", value=categorias["lunch"])
-        categorias["postres"] = st.checkbox("Postres", value=categorias["postres"])
-    with col2:
-        categorias["comida_rapida"] = st.checkbox("Comida rápida", value=categorias["comida_rapida"])
-        categorias["otros"] = st.checkbox("Otros", value=categorias["otros"])
+            bloque["comidas"] = st.multiselect(
+                "Comidas",
+                options=opts_c,
+                default=[x for x in bloque["comidas"] if x in opts_c],
+                format_func=nombre_producto,
+                key=f"chef_ms_{dia}_comidas",
+            )
+            bloque["postres"] = st.multiselect(
+                "Postres",
+                options=opts_p,
+                default=[x for x in bloque["postres"] if x in opts_p],
+                format_func=nombre_producto,
+                key=f"chef_ms_{dia}_postres",
+            )
+            bloque["otros"] = st.multiselect(
+                "Otros",
+                options=opts_o,
+                default=[x for x in bloque["otros"] if x in opts_o],
+                format_func=nombre_producto,
+                key=f"chef_ms_{dia}_otros",
+            )
 
-    st.markdown("### Platos del día")
-    platos_config = config["platos"]
-    cat_prod = productos_por_categoria()
-
-    for cat_key, cat_label in [
-        ("lunch", "Lunch"),
-        ("comida_rapida", "Comida rápida"),
-        ("postres", "Postres"),
-        ("otros", "Otros"),
-    ]:
-        if not categorias[cat_key]:
-            continue
-
-        st.markdown(f"**{cat_label}**")
-        seleccionados = set(platos_config[cat_key])
-        nuevos = []
-
-        for pid, nombre in cat_prod[cat_key]:
-            marcado = pid in seleccionados
-            marcado = st.checkbox(nombre, value=marcado, key=f"{cat_key}_{pid}")
-            if marcado:
-                nuevos.append(pid)
-
-        platos_config[cat_key] = nuevos
-
-    col_g1, col_g2 = st.columns(2)
-    with col_g1:
-        if st.button("Guardar menú del día"):
-            guardar_config_menu(config)
-            st.success("Menú del día actualizado correctamente.")
-    with col_g2:
-        if st.button("Reiniciar menú"):
-            reiniciar_menu()
-            st.success("Menú reiniciado.")
+    st.markdown("---")
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("Guardar menú semanal"):
+            guardar_menu_semana(config)
+            st.success("Menú semanal guardado.")
+    with c2:
+        if st.button("Vaciar toda la semana"):
+            vacio = menu_semana_por_defecto()
+            guardar_menu_semana(vacio)
+            for d in DIAS_ORDEN:
+                for col in ("comidas", "postres", "otros"):
+                    st.session_state.pop(f"chef_ms_{d}_{col}", None)
+            st.success("Plantilla reiniciada.")
+            st.rerun()

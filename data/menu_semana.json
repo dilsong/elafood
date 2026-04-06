@@ -1,0 +1,54 @@
+{
+  "dias": {
+    "lunes": {
+      "comidas": [
+        "produ_001"
+      ],
+      "postres": [
+        "produ_005",
+        "produ_0053",
+        "produ_0052",
+        "produ_0055"
+      ],
+      "otros": [
+        "produ_0081"
+      ]
+    },
+    "martes": {
+      "comidas": [
+        "produ_004"
+      ],
+      "postres": [],
+      "otros": []
+    },
+    "miercoles": {
+      "comidas": [
+        "produ_002"
+      ],
+      "postres": [],
+      "otros": []
+    },
+    "jueves": {
+      "comidas": [
+        "produ_003"
+      ],
+      "postres": [],
+      "otros": []
+    },
+    "viernes": {
+      "comidas": [],
+      "postres": [],
+      "otros": []
+    },
+    "sabado": {
+      "comidas": [],
+      "postres": [],
+      "otros": []
+    },
+    "domingo": {
+      "comidas": [],
+      "postres": [],
+      "otros": []
+    }
+  }
+}

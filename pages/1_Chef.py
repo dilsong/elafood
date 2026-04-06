@@ -27,7 +27,7 @@ st.markdown(
         Panel del Chef – ElaFood
     </h1>
     <p style='text-align:center; color:#444; margin-top:-10px;'>
-        Configura el menú del día, categorías y platos disponibles.
+        Configura el menú de la semana: por día, Comidas, Postres y Otros.
     </p>
     """,
     unsafe_allow_html=True

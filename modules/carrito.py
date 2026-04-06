@@ -3,6 +3,8 @@ import hashlib
 import streamlit as st
 
 from modules.imagenes import obtener_imagen
+from modules.menu_semana import etiqueta_dia
+from modules.productos import es_comida_lunch_o_rapida_por_nombre
 
 
 def inicializar_carrito():
@@ -10,9 +12,10 @@ def inicializar_carrito():
         st.session_state.carrito = []
 
 
-def agregar(producto, cantidad, precio):
+def agregar(producto: str, cantidad: int, precio: float, dia: str | None = None):
+    """dia: clave lunes..domingo desde menú semanal; None si viene del catálogo."""
     for item in st.session_state.carrito:
-        if item["producto"] == producto:
+        if item["producto"] == producto and item.get("dia") == dia:
             item["cantidad"] += cantidad
             return
 
@@ -21,6 +24,7 @@ def agregar(producto, cantidad, precio):
             "producto": producto,
             "cantidad": cantidad,
             "precio": precio,
+            "dia": dia,
         }
     )
 
@@ -29,24 +33,30 @@ def vaciar_carrito():
     st.session_state.carrito = []
 
 
-def _clave_cantidad_carrito(nombre_producto: str) -> str:
-    h = hashlib.md5(nombre_producto.encode("utf-8")).hexdigest()[:16]
+def _clave_cantidad_carrito(nombre_producto: str, dia) -> str:
+    raw = f"{nombre_producto}|{dia if dia is not None else ''}"
+    h = hashlib.md5(raw.encode("utf-8")).hexdigest()[:16]
     return f"elafood_cart_qty_{h}"
 
 
-def _sync_cantidad_linea(nombre_producto: str, state_key: str):
+def _sync_cantidad_linea(nombre_producto: str, dia, state_key: str):
     def _fn():
         val = int(st.session_state[state_key])
         for it in st.session_state.carrito:
-            if it["producto"] == nombre_producto:
+            if it["producto"] == nombre_producto and it.get("dia") == dia:
                 it["cantidad"] = val
                 return
 
     return _fn
 
 
+def _etiqueta_linea_carrito(producto: str, dia) -> str:
+    if dia and es_comida_lunch_o_rapida_por_nombre(producto):
+        return f"{etiqueta_dia(dia)} — {producto}"
+    return producto
+
+
 def mostrar_carrito():
-    # Solo icono: dos columnas + CSS global del sidebar hacían que el texto “Carrito” se saliera del panel en móvil.
     carrito_icono = obtener_imagen("Imagenes/Logos/carrito.jpeg")
     st.sidebar.image(carrito_icono, width=40)
 
@@ -60,11 +70,13 @@ def mostrar_carrito():
         producto = item["producto"]
         cantidad = item["cantidad"]
         precio = item["precio"]
+        dia = item.get("dia")
         subtotal = precio * cantidad
 
-        st.sidebar.write(f"**{producto}** — ${subtotal}")
+        etiqueta = _etiqueta_linea_carrito(producto, dia)
+        st.sidebar.write(f"**{etiqueta}** — ${subtotal}")
 
-        sk = _clave_cantidad_carrito(producto)
+        sk = _clave_cantidad_carrito(producto, dia)
         if st.session_state.get(sk) != cantidad:
             st.session_state[sk] = cantidad
 
@@ -73,7 +85,7 @@ def mostrar_carrito():
             min_value=1,
             max_value=99,
             key=sk,
-            on_change=_sync_cantidad_linea(producto, sk),
+            on_change=_sync_cantidad_linea(producto, dia, sk),
             label_visibility="collapsed",
         )
 
