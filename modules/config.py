@@ -6,6 +6,9 @@ URL_SALIR_DESTINO = "https://www.instagram.com/elafood/"
 # Favicon (pestaña del navegador) y logo en la parte superior del sidebar (st.logo). PNG o JPG.
 RUTA_ICONO_APP = "Imagenes/Logos/carritoweb.jpg"
 
+# Icono del aviso flotante al agregar al carrito (mismo archivo u otro pequeño).
+RUTA_ICONO_MINI_CARRITO = "Imagenes/Logos/carritoweb.jpg"
+
 # Imagen grande bajo la cabecera (antes era el banner). Ajusta a tu archivo.
 RUTA_IMAGEN_PORTADA = "Imagenes/fondo.jpg"
 
