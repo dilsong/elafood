@@ -1,13 +1,23 @@
+import html
+
 import streamlit as st
 
 from modules.carrito import agregar, mostrar_carrito
 from modules.cliente import formulario_cliente
-from modules.config import RUTA_ICONO_APP, TELEFONO_ELAFOOD, URL_SALIR_DESTINO
-from modules.estilo import cabecera_portada, estilos_app
-from modules.menu import mostrar_filtro_categoria_semana
+from modules.config import (
+    INTRO_PLATOS_SEMANA,
+    INTRO_POSTRES_ESPECIALIDADES,
+    RUTA_ICONO_APP,
+    RUTA_ICONO_MINI_CARRITO,
+    TELEFONO_ELAFOOD,
+    TEXTO_AYUDA_CARRITO,
+    URL_SALIR_DESTINO,
+)
+from modules.imagenes import src_para_html
+from modules.estilo import cabecera_portada, estilos_app, expandir_sidebar_streamlit
 from modules.menu_semana import DIAS_ORDEN, ETIQUETA_DIA, cargar_menu_semana
 from modules.productos import PRODUCTOS
-from modules.tarjetas import tarjeta_producto, tarjeta_producto_hoy
+from modules.tarjetas import tarjeta_producto_hoy
 from modules.whatsapp import generar_link_whatsapp, generar_mensaje
 
 # ---------------------------------------------------------
@@ -65,9 +75,9 @@ if "pedido_generado" not in st.session_state:
 
 cabecera_portada()
 
-filtro_columna = mostrar_filtro_categoria_semana()
+st.info(TEXTO_AYUDA_CARRITO, icon="🛒")
 
-tab1, tab2 = st.tabs(["Esta Semana!", "Menú"])
+tab1, tab2 = st.tabs(["Platos de la Semana", "Postres y Especialidades"])
 
 
 def _render_platos_columna(dia: str, pids: list, titulo: str):
@@ -89,68 +99,92 @@ def _render_platos_columna(dia: str, pids: list, titulo: str):
         )
         if agregar_btn and cantidad > 0:
             agregar(p["nombre"], cantidad, p["precio"], dia=dia)
-            st.toast(
-                f"Listo: {cantidad}× {p['nombre']} en el carrito",
-                icon="✅",
-            )
+            st.session_state["_flash_agregado_carrito"] = f"{cantidad}× {p['nombre']}"
+            st.session_state["_expand_sidebar_tras_agregar"] = True
 
 
 # =========================================================
-# ESTA SEMANA
+# Platos de la Semana (Lun–Dom en Chef)
 # =========================================================
 with tab1:
-    data = cargar_menu_semana()
-    titulos = {"comidas": "Comidas", "postres": "Postres", "otros": "Otros"}
+    st.markdown(INTRO_PLATOS_SEMANA)
+    st.markdown("---")
 
-    alguno_en_filtro = any(
-        (data["dias"][d].get(filtro_columna) or []) for d in DIAS_ORDEN
-    )
-    alguno_en_semana = any(
+    data = cargar_menu_semana()
+    titulos_col = {"comidas": "Comidas", "postres": "Postres", "otros": "Otros"}
+
+    alguno = any(
         any(data["dias"][d].get(k) for k in ("comidas", "postres", "otros"))
         for d in DIAS_ORDEN
     )
 
-    if not alguno_en_semana:
+    if not alguno:
         st.info(
-            "Aún no hay platos publicados para esta semana. "
-            "El chef puede configurarlos en la página **Chef**."
-        )
-    elif not alguno_en_filtro:
-        st.info(
-            f"No hay **{titulos[filtro_columna]}** publicados en ningún día. "
-            "Elige otra categoría en el menú lateral o pide al chef que complete esa columna."
+            "Aún no hay platos publicados para estos días. "
+            "El chef puede configurarlos en la página **Chef** (Lunes a Domingo)."
         )
     else:
         for dia in DIAS_ORDEN:
             bloque = data["dias"][dia]
-            pids = bloque.get(filtro_columna) or []
-            if not pids:
+            if not any(bloque.get(k) for k in ("comidas", "postres", "otros")):
                 continue
 
             st.markdown(
                 f"<h2 style='color:#7A1F1F;margin-top:1.2rem;'>{ETIQUETA_DIA[dia]}</h2>",
                 unsafe_allow_html=True,
             )
-            _render_platos_columna(dia, pids, titulos[filtro_columna])
+            for col_key in ("comidas", "postres", "otros"):
+                _render_platos_columna(
+                    dia,
+                    bloque.get(col_key) or [],
+                    titulos_col[col_key],
+                )
 
 
 # =========================================================
-# MENÚ (catálogo)
+# Postres y Especialidades (pestaña Esp. en Chef)
 # =========================================================
 with tab2:
-    st.subheader("Todos los platos de ElaFood")
+    st.markdown(INTRO_POSTRES_ESPECIALIDADES)
+    st.markdown("---")
 
-    for pid, p in PRODUCTOS.items():
-        key = f"catalogo_{p['nombre']}"
-        tarjeta_producto(
-            p["nombre"],
-            p["precio"],
-            p["imagen"],
-            p.get("descripcion", ""),
-            key,
-            mostrar_boton=False,
+    data = cargar_menu_semana()
+    esp = data.get("especial") or {"comidas": [], "postres": [], "otros": []}
+    titulos_col = {"comidas": "Comidas", "postres": "Postres", "otros": "Otros"}
+
+    alguno_esp = any(esp.get(k) for k in ("comidas", "postres", "otros"))
+
+    if not alguno_esp:
+        st.info(
+            "Aún no hay platos en **Especial**. "
+            "El chef puede cargarlos en **Chef** → pestaña **Esp.**"
         )
+    else:
+        st.markdown(
+            "<h2 style='color:#7A1F1F;'>Especial</h2>",
+            unsafe_allow_html=True,
+        )
+        for col_key in ("comidas", "postres", "otros"):
+            _render_platos_columna(
+                "especial",
+                esp.get(col_key) or [],
+                titulos_col[col_key],
+            )
 
+msg_flash = st.session_state.pop("_flash_agregado_carrito", None)
+if msg_flash:
+    _src_ico = html.escape(src_para_html(RUTA_ICONO_MINI_CARRITO), quote=True)
+    _txt = html.escape(msg_flash)
+    st.markdown(
+        f'<div class="elafood-flash-carrito">'
+        f'<img class="elafood-flash-carrito-ico" src="{_src_ico}" alt="" />'
+        f"<span><strong>{_txt}</strong> — ¡Agregado al carrito!</span>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
+if st.session_state.pop("_expand_sidebar_tras_agregar", False):
+    expandir_sidebar_streamlit()
 
 # =========================================================
 # SIDEBAR (pedido)

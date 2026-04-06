@@ -14,9 +14,7 @@ from modules.menu_semana import (
     menu_semana_por_defecto,
     nombre_producto,
 )
-# -----------------------------
-# PIN
-# -----------------------------
+
 PIN_FILE = "data/chef_pin.secret"
 
 
@@ -40,55 +38,66 @@ def validar_pin(pin_ingresado: str) -> bool:
     return pin_real != "" and pin_ingresado == pin_real
 
 
-# -----------------------------
-# Panel: menú semanal (grilla día × Comidas / Postres / Otros)
-# -----------------------------
+def _editor_dia_o_especial(
+    config: dict,
+    clave: str,
+    titulo: str,
+    prefijo_keys: str,
+):
+    st.markdown(f"### {titulo}")
+    if clave == "especial":
+        bloque = config["especial"]
+    else:
+        bloque = config["dias"][clave]
+
+    bloque["comidas"] = st.multiselect(
+        "Comidas",
+        options=ids_opcion_comidas(),
+        default=[x for x in bloque["comidas"] if x in ids_opcion_comidas()],
+        format_func=nombre_producto,
+        key=f"chef_ms_{prefijo_keys}_comidas",
+    )
+    bloque["postres"] = st.multiselect(
+        "Postres",
+        options=ids_opcion_postres(),
+        default=[x for x in bloque["postres"] if x in ids_opcion_postres()],
+        format_func=nombre_producto,
+        key=f"chef_ms_{prefijo_keys}_postres",
+    )
+    bloque["otros"] = st.multiselect(
+        "Otros",
+        options=ids_opcion_otros(),
+        default=[x for x in bloque["otros"] if x in ids_opcion_otros()],
+        format_func=nombre_producto,
+        key=f"chef_ms_{prefijo_keys}_otros",
+    )
+
+
 def vista_panel_chef():
     if "chef_pin_ok" not in st.session_state:
         st.session_state.chef_pin_ok = False
 
     st.subheader("Menú de la semana")
     st.caption(
-        "Por cada día elige qué ofrecerás. **Comidas** agrupa Lunch y Comida rápida. "
-        "Sin fechas: la semana es siempre la misma plantilla hasta que la cambies."
+        "**Lunes a domingo:** platos que ves en **Platos de la Semana** en la app. "
+        "**Esp. (Especial):** lo que ves en **Postres y Especialidades**. "
+        "**Comidas** agrupa Lunch y Comida rápida."
     )
 
     st.markdown("---")
 
     config = cargar_menu_semana()
-    opts_c = ids_opcion_comidas()
-    opts_p = ids_opcion_postres()
-    opts_o = ids_opcion_otros()
 
-    tab_labels = [ETIQUETA_DIA[d][:3] + "." for d in DIAS_ORDEN]
+    tab_labels = [ETIQUETA_DIA[d][:3] + "." for d in DIAS_ORDEN] + ["Esp."]
     tabs = st.tabs(tab_labels)
 
     for i, dia in enumerate(DIAS_ORDEN):
         with tabs[i]:
-            st.markdown(f"### {ETIQUETA_DIA[dia]}")
-            bloque = config["dias"][dia]
+            _editor_dia_o_especial(config, dia, ETIQUETA_DIA[dia], dia)
 
-            bloque["comidas"] = st.multiselect(
-                "Comidas",
-                options=opts_c,
-                default=[x for x in bloque["comidas"] if x in opts_c],
-                format_func=nombre_producto,
-                key=f"chef_ms_{dia}_comidas",
-            )
-            bloque["postres"] = st.multiselect(
-                "Postres",
-                options=opts_p,
-                default=[x for x in bloque["postres"] if x in opts_p],
-                format_func=nombre_producto,
-                key=f"chef_ms_{dia}_postres",
-            )
-            bloque["otros"] = st.multiselect(
-                "Otros",
-                options=opts_o,
-                default=[x for x in bloque["otros"] if x in opts_o],
-                format_func=nombre_producto,
-                key=f"chef_ms_{dia}_otros",
-            )
+    with tabs[-1]:
+        st.caption("Contenido de la pestaña **Postres y Especialidades** en la página principal.")
+        _editor_dia_o_especial(config, "especial", "Especial (Esp.)", "especial")
 
     st.markdown("---")
     c1, c2 = st.columns(2)
@@ -103,5 +112,7 @@ def vista_panel_chef():
             for d in DIAS_ORDEN:
                 for col in ("comidas", "postres", "otros"):
                     st.session_state.pop(f"chef_ms_{d}_{col}", None)
+            for col in ("comidas", "postres", "otros"):
+                st.session_state.pop(f"chef_ms_especial_{col}", None)
             st.success("Plantilla reiniciada.")
             st.rerun()

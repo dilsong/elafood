@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Menú semanal: datos y etiquetas (sin fechas, solo días)."""
+"""Menú semanal: días (lun–dom) + bloque Especial (Postres y Especialidades en Home)."""
 
 import json
 import os
@@ -8,7 +8,6 @@ from modules.productos import PRODUCTOS
 
 MENU_SEMANA_FILE = "data/menu_semana.json"
 
-# Claves en JSON (sin tildes, estables)
 DIAS_ORDEN = [
     "lunes",
     "martes",
@@ -27,6 +26,7 @@ ETIQUETA_DIA = {
     "viernes": "Viernes",
     "sabado": "Sábado",
     "domingo": "Domingo",
+    "especial": "Especial",
 }
 
 
@@ -34,12 +34,14 @@ def etiqueta_dia(clave: str) -> str:
     return ETIQUETA_DIA.get(clave, clave)
 
 
+def _bloque_vacio() -> dict:
+    return {"comidas": [], "postres": [], "otros": []}
+
+
 def menu_semana_por_defecto() -> dict:
     return {
-        "dias": {
-            d: {"comidas": [], "postres": [], "otros": []}
-            for d in DIAS_ORDEN
-        }
+        "dias": {d: _bloque_vacio() for d in DIAS_ORDEN},
+        "especial": _bloque_vacio(),
     }
 
 
@@ -65,6 +67,12 @@ def cargar_menu_semana() -> dict:
             "postres": list(bloque.get("postres") or []),
             "otros": list(bloque.get("otros") or []),
         }
+    esp = data.get("especial") or {}
+    base["especial"] = {
+        "comidas": list(esp.get("comidas") or []),
+        "postres": list(esp.get("postres") or []),
+        "otros": list(esp.get("otros") or []),
+    }
     return base
 
 

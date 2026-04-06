@@ -86,7 +86,7 @@ def tarjeta_producto_hoy(nombre, precio, imagen, descripcion, key):
     
 
 # Ruta del logo/foto opcional en Panel Chef (mismo archivo en disco o en GitHub raw)
-RUTA_LOGO_CHEF_OPCIONAL = "Imagenes/Logos/IMG_5899.jpg"
+RUTA_LOGO_CHEF_OPCIONAL = "Imagenes/Logos/IMG_5894.jpg"
 
 
 def tarjeta_acerca_chef():

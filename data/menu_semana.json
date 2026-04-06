@@ -4,15 +4,8 @@
       "comidas": [
         "produ_001"
       ],
-      "postres": [
-        "produ_005",
-        "produ_0053",
-        "produ_0052",
-        "produ_0055"
-      ],
-      "otros": [
-        "produ_0081"
-      ]
+      "postres": [],
+      "otros": []
     },
     "martes": {
       "comidas": [
@@ -50,5 +43,20 @@
       "postres": [],
       "otros": []
     }
+  },
+  "especial": {
+    "comidas": [],
+    "postres": [
+      "produ_005",
+      "produ_0053",
+      "produ_0051",
+      "produ_0052",
+      "produ_0055",
+      "produ_0054",
+      "produ_0056",
+      "produ_006",
+      "produ_0061"
+    ],
+    "otros": []
   }
 }

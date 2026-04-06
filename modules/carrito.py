@@ -2,7 +2,6 @@ import hashlib
 
 import streamlit as st
 
-from modules.imagenes import obtener_imagen
 from modules.menu_semana import etiqueta_dia
 from modules.productos import es_comida_lunch_o_rapida_por_nombre
 
@@ -57,8 +56,10 @@ def _etiqueta_linea_carrito(producto: str, dia) -> str:
 
 
 def mostrar_carrito():
-    carrito_icono = obtener_imagen("Imagenes/Logos/carrito.jpeg")
-    st.sidebar.image(carrito_icono, width=40)
+    st.sidebar.markdown(
+        "<div style='font-size:17px;font-weight:700;color:#7A1F1F;margin-bottom:6px;'>Carrito</div>",
+        unsafe_allow_html=True,
+    )
 
     total = 0
 

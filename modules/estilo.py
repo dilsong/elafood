@@ -4,6 +4,7 @@
 # Descripción: Contiene funciones para el diseño y estilo de la aplicación.
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from modules.imagenes import obtener_imagen, src_para_html
 
@@ -92,14 +93,42 @@ def estilos_app():
             display: none !important;
         }
 
-        /* Pestañas principales (Esta Semana! / Menú) */
-        .stTabs [data-baseweb="tab"] {
-            font-size: 1.2rem !important;
-            font-weight: 600 !important;
-        }
+        /* Pestañas principales (más grandes que redes ~18px) */
+        .stTabs [data-baseweb="tab"],
         div[data-testid="stTabs"] button[data-baseweb="tab"] {
-            font-size: 1.2rem !important;
+            font-size: 1.6rem !important;
             font-weight: 600 !important;
+            padding: 0.5rem 0.75rem !important;
+        }
+        div[data-testid="stTabs"] [data-baseweb="tab"] p,
+        div[data-testid="stTabs"] button[data-baseweb="tab"] p {
+            font-size: 1.6rem !important;
+        }
+
+        /* Aviso al agregar: debajo de la barra (no tapa «» del sidebar) */
+        .elafood-flash-carrito {
+            position: fixed !important;
+            top: 3.85rem !important;
+            left: 0.5rem !important;
+            right: auto !important;
+            z-index: 999990 !important;
+            background: #7A1F1F !important;
+            color: #fff !important;
+            padding: 10px 14px !important;
+            border-radius: 10px !important;
+            font-size: 0.95rem !important;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25) !important;
+            max-width: min(92vw, 360px) !important;
+            line-height: 1.35 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+        .elafood-flash-carrito-ico {
+            width: 26px !important;
+            height: 26px !important;
+            object-fit: contain !important;
+            flex-shrink: 0 !important;
         }
 
         @media (max-width: 768px) {
@@ -112,6 +141,32 @@ def estilos_app():
         </style>
         """,
         unsafe_allow_html=True,
+    )
+
+
+def expandir_sidebar_streamlit():
+    """
+    Abre el panel lateral si está colapsado (equivalente a pulsar » / ≡).
+    Depende del DOM de Streamlit; si falla en una versión, el usuario sigue pudiendo abrir a mano.
+    """
+    components.html(
+        """
+        <script>
+        const doc = window.parent.document;
+        const q = [
+            '[data-testid="collapsedControl"]',
+            'button[aria-label="Open sidebar"]',
+            'button[aria-label="View sidebar"]',
+            'button[title="View sidebar"]',
+        ];
+        for (const s of q) {
+            const b = doc.querySelector(s);
+            if (b) { b.click(); break; }
+        }
+        </script>
+        """,
+        height=0,
+        width=0,
     )
 
 
