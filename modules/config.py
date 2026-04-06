@@ -25,6 +25,6 @@ INTRO_POSTRES_ESPECIALIDADES = (
 )
 
 TEXTO_AYUDA_CARRITO = (
-    "**¿Cómo pedir?** Toca **≡** o las flechitas **»** arriba a la izquierda para abrir el menú lateral: "
+    "** Toca **≡** o las flechitas **»** arriba a la izquierda para abrir el menú lateral: "
     "ahí está el **carrito**, tus **datos** y el botón **Generar pedido** / **WhatsApp**."
 )
