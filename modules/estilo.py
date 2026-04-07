@@ -42,7 +42,7 @@ def estilos_app():
         .stApp [data-testid="baseButton-primary"],
         .stApp button[kind="secondary"],
         .stApp button[kind="primary"] {
-            background-color: #7A1F1F !important;
+            background-color: #91241D !important;
             color: #ffffff !important;
             padding: 12px 28px !important;
             border: none !important;
@@ -63,7 +63,7 @@ def estilos_app():
         section[data-testid="stSidebar"] [data-testid="stButton"] button,
         section[data-testid="stSidebar"] button[kind="secondary"],
         section[data-testid="stSidebar"] button[kind="primary"] {
-            background-color: #7A1F1F !important;
+            background-color: #91241D !important;
             color: #ffffff !important;
             border: none !important;
             font-weight: 600 !important;
@@ -99,10 +99,71 @@ def estilos_app():
             font-size: 1.6rem !important;
             font-weight: 600 !important;
             padding: 0.5rem 0.75rem !important;
+            color: #91241D !important;
         }
         div[data-testid="stTabs"] [data-baseweb="tab"] p,
         div[data-testid="stTabs"] button[data-baseweb="tab"] p {
             font-size: 1.6rem !important;
+            color: #91241D !important;
+        }
+        div[data-testid="stTabs"] button[aria-selected="true"] p {
+            color: #91241D !important;
+        }
+        div[data-testid="stTabs"] button[aria-selected="true"] {
+            background: #F6E6DF !important;
+            border-radius: 8px 8px 0 0 !important;
+            border-bottom: 3px solid #91241D !important;
+        }
+
+        /* Mensajes tipo "info" personalizados (fondo y letras solicitados) */
+        .elafood-note {
+            background: #F6E6DF !important;
+            color: #9d1414 !important;
+            border: 1px solid #D8B6A7 !important;
+            border-radius: 10px !important;
+            padding: 12px 14px !important;
+            margin: 8px 0 12px 0 !important;
+            line-height: 1.45 !important;
+        }
+        .elafood-note strong {
+            color: #9d1414 !important;
+        }
+
+        /* Links de envío en sidebar */
+        .elafood-send-link {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            padding: 10px 12px !important;
+            margin: 6px 0 !important;
+            border-radius: 10px !important;
+            text-decoration: none !important;
+            background: #91241D !important;
+            color: #fff !important;
+            font-weight: 600 !important;
+        }
+        .elafood-send-link:hover {
+            background: #761d17 !important;
+            color: #fff !important;
+        }
+        .elafood-send-icon {
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 999px !important;
+            background: #fff !important;
+            color: #91241D !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 17px !important;
+            line-height: 1 !important;
+            flex-shrink: 0 !important;
+        }
+        .elafood-send-icon svg {
+            width: 18px !important;
+            height: 18px !important;
+            fill: #91241D !important;
+            display: block !important;
         }
 
         /* Aviso al agregar: debajo de la barra (no tapa «» del sidebar) */
@@ -112,7 +173,7 @@ def estilos_app():
             left: 0.5rem !important;
             right: auto !important;
             z-index: 999990 !important;
-            background: #7A1F1F !important;
+            background: #91241D !important;
             color: #fff !important;
             padding: 10px 14px !important;
             border-radius: 10px !important;
@@ -178,11 +239,11 @@ def cabecera_portada():
     st.markdown(
         f"""
         <div class="elafood-redes" style="text-align:center;margin:10px 0 6px 0;font-size:18px;">
-            <a href="{URL_INSTAGRAM}" target="_blank" rel="noopener noreferrer" style="color:#7A1F1F;font-weight:600;">Instagram</a>
+            <a href="{URL_INSTAGRAM}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">Instagram</a>
             &nbsp;|&nbsp;
-            <a href="{URL_FACEBOOK}" target="_blank" rel="noopener noreferrer" style="color:#7A1F1F;font-weight:600;">Facebook</a>
+            <a href="{URL_FACEBOOK}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">Facebook</a>
             &nbsp;|&nbsp;
-            <a href="{URL_WHATSAPP}" target="_blank" rel="noopener noreferrer" style="color:#7A1F1F;font-weight:600;">WhatsApp</a>
+            <a href="{URL_WHATSAPP}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">WhatsApp</a>
         </div>
         """,
         unsafe_allow_html=True,
@@ -201,7 +262,7 @@ def banner():
         <style>
             .elafood-banner {{
                 width: 100%;
-                background-color: #7A1F1F;
+                background-color: #91241D;
                 padding: 18px 16px;
                 border-radius: 10px;
                 box-sizing: border-box;

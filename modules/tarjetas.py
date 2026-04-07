@@ -61,7 +61,7 @@ def tarjeta_producto_hoy(nombre, precio, imagen, descripcion, key):
 
     # ------------------ COL 2: Nombre + Descripción ------------------
     with col2:
-        st.markdown(f"<h3 style='color:#7A1F1F;'>{nombre}</h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='color:#91241D;'>{nombre}</h3>", unsafe_allow_html=True)
         st.write(descripcion)
 
     # ------------------ COL 3: Precio + cantidad + botón + check ------------------
@@ -100,35 +100,33 @@ def tarjeta_acerca_chef():
                 height:150px;
                 border-radius:50%;
                 overflow:hidden;
-                border:3px solid #7A1F1F;
+                border:3px solid #91241D;
                 flex-shrink:0;
             ">
                 <img src="{src_logo}" alt="ElaFood" style="width:100%;height:100%;object-fit:cover;display:block;" />
             </div>
-        </div>
-        <p style="color:#7A1F1F; font-size:13px; text-align:center; margin-top:8px; margin-bottom:20px;">
-            (Foto opcional — Ela prefiere el anonimato)
-        </p>
+        </div>        
 
         <p style="font-size:16px; line-height:1.6; color:#333;">
-            Nuestra chef prefiere el silencio a los reflectores.
-            Cocina como quien reza: en voz baja, con devoción.
-            <br><br>
-            Aprendió de su madre, entre aromas que no se olvidan,
-            y perfeccionó su sazón en cocinas de Ecuador,
-            pero su verdadero arte nació en casa,
-            alimentando a quienes ama.
-            <br><br>
-            No negocia con la frescura:
-            cada plato se prepara al momento,
-            cada postre vive apenas dos días,
-            porque la comida —dice ella—
-            tiene alma solo cuando es reciente.
-            <br><br>
-            Sus recetas son familiares, honestas,
-            hechas con manos que conocen el cariño.
-            Por eso, cuando pruebas su comida,
-            no solo comes… te sientes en casa.
+            Somos un negocio familiar nacido del amor por los postres y la comida hecha en casa.
+            Cada plato, postre y detalle lo preparamos con dedicación, cariño y ese sabor casero 
+            que hace sentir como en familia.
+
+            Nuestra visión es ayudarte a disfrutar de comidas frescas, sanas y balanceadas, 
+            especialmente con nuestros almuerzos semanales, pensados para facilitar tu día 
+            sin renunciar al buen sabor.
+
+            Además, estamos desarrollando un menú saludable con información de macros y 
+            proteína, ideal para quienes desean llevar una alimentación más consciente y 
+            adaptada a sus objetivos.
+
+            Y para los amantes del dulce, creamos postres caseros irresistibles, llenos de 
+            **sabor**, **amor** y ese toque especial que solo lo **hecho en casa puede o
+            frecer**.
+
+            Llevar a cada hogar comida casera, fresca y deliciosa, preparada con amor, 
+            ofreciendo opciones balanceadas para el día a día y postres que 
+            alegren cualquier momento.
         </p>
         """,
         unsafe_allow_html=True,

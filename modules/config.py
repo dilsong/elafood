@@ -1,13 +1,16 @@
 TELEFONO_ELAFOOD = "+15619004479"
 
 # Opcional: enlace al pulsar «Salir» (Instagram, web, etc.). Cadena vacía = solo mensaje en pantalla.
-URL_SALIR_DESTINO = "https://www.instagram.com/elafood/"
+URL_SALIR_DESTINO = "https://www.instagram.com/ela.food2024?igsh=MWQwaG01eXZocXVrcg=="
 
 # Favicon (pestaña del navegador) y logo en la parte superior del sidebar (st.logo). PNG o JPG.
 RUTA_ICONO_APP = "Imagenes/Logos/carritoweb.jpg"
 
 # Icono del aviso flotante al agregar al carrito (mismo archivo u otro pequeño).
 RUTA_ICONO_MINI_CARRITO = "Imagenes/Logos/carritoweb.jpg"
+
+# Logo usado en la pantalla de salida (centro de la vista de despedida).
+RUTA_LOGO_SALIDA = "Imagenes/Logos/logo.jpg"
 
 # Imagen grande bajo la cabecera (antes era el banner). Ajusta a tu archivo.
 RUTA_IMAGEN_PORTADA = "Imagenes/fondo.jpg"
@@ -19,15 +22,16 @@ URL_WHATSAPP = "https://wa.me/15619004479"
 
 # Textos editables (Home): intros bajo cada pestaña y aviso del carrito lateral.
 INTRO_PLATOS_SEMANA = (
-    "**Indicaciones — Menú diferente cada semana, con un plato especial para cada día." 
+    "Menú diferente cada semana, con un plato especial para cada día." 
     "Recibe tus almuerzos listos para calentar y disfrutar, ahorrando tiempo sin dejar de comer rico y casero."
 )
 
 INTRO_POSTRES_ESPECIALIDADES = (
-    "**Indicaciones — Disponibles solo por encargo. Cada pedido se prepara con anticipación para garantizar frescura y calidad."
+    "Disponibles solo por encargo. Cada pedido se prepara con anticipación para garantizar frescura y calidad."
 )
 
 TEXTO_AYUDA_CARRITO = (
-    "** Toca **≡** o las flechitas **»** arriba a la izquierda para abrir el menú lateral: "
-    "ahí está el **carrito**, tus **datos** y el botón **Generar pedido** / **WhatsApp**."
+    "Mira en el **Carrito** **≡** o **»** arriba a la izquierda para abrir el **menú lateral**: "
+    "allí encontrarás tu **Pedido**, agrega tud datos y presiona el boton "
+    "**Generar Pedido** / **Enviar a WhatsApp** / **Enviar por Mensaje de Texto**."
 )

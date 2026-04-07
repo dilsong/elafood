@@ -57,7 +57,7 @@ def _etiqueta_linea_carrito(producto: str, dia) -> str:
 
 def mostrar_carrito():
     st.sidebar.markdown(
-        "<div style='font-size:17px;font-weight:700;color:#7A1F1F;margin-bottom:6px;'>Carrito</div>",
+        "<div style='font-size:17px;font-weight:700;color:#91241D;margin-bottom:6px;'>Carrito</div>",
         unsafe_allow_html=True,
     )
 

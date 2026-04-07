@@ -33,3 +33,9 @@ def generar_link_whatsapp(telefono, mensaje):
     telefono = telefono.replace("+", "").replace(" ", "")
     mensaje_codificado = urllib.parse.quote(mensaje)
     return f"https://wa.me/{telefono}?text={mensaje_codificado}"
+
+
+def generar_link_sms(telefono, mensaje):
+    telefono_limpio = telefono.replace(" ", "")
+    mensaje_codificado = urllib.parse.quote(mensaje)
+    return f"sms:{telefono_limpio}?body={mensaje_codificado}"
