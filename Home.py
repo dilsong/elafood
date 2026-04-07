@@ -52,11 +52,11 @@ st.markdown(
     "<meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'>",
     unsafe_allow_html=True,
 )
-if hasattr(st, "logo"):
-    try:
-        st.logo(RUTA_ICONO_APP)
-    except Exception:
-        pass
+# Logo en sidebar sin usar st.logo (evita warning deprecado interno).
+try:
+    st.sidebar.image(RUTA_ICONO_APP, width=110)
+except Exception:
+    pass
 
 if "vista_salida" not in st.session_state:
     st.session_state.vista_salida = False

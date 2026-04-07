@@ -18,11 +18,11 @@ st.set_page_config(
 )
 estilos_app()
 
-if hasattr(st, "logo"):
-    try:
-        st.logo(RUTA_ICONO_APP)
-    except Exception:
-        pass
+# Logo en sidebar sin usar st.logo (evita warning deprecado interno).
+try:
+    st.sidebar.image(RUTA_ICONO_APP, width=110)
+except Exception:
+    pass
 
 st.markdown(
     """
