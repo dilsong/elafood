@@ -79,7 +79,7 @@ def tarjeta_producto_hoy(nombre, precio, imagen, descripcion, key):
         agregar_btn = st.button(
             "Agregar al carrito",
             key=f"btn_hoy_{key}",
-            use_container_width=True,
+            width="stretch",
         )
 
         return cantidad, agregar_btn

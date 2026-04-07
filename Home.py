@@ -274,7 +274,7 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
 
     # Confirmación explícita para habilitar "Hacer nuevo pedido".
     if not st.session_state.envio_confirmado:
-        if st.sidebar.button("Confirmar envío", use_container_width=True):
+        if st.sidebar.button("Confirmar envío", width="stretch"):
             st.session_state.envio_confirmado = True
             st.rerun()
 
@@ -297,6 +297,6 @@ if st.session_state.pop("_flash_nuevo_pedido", False):
     )
 
 st.sidebar.markdown("---")
-if st.sidebar.button("🚪 Salir", use_container_width=True, help="Cierra el flujo y muestra despedida"):
+if st.sidebar.button("🚪 Salir", width="stretch", help="Cierra el flujo y muestra despedida"):
     st.session_state.vista_salida = True
     st.rerun()

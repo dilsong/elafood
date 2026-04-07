@@ -235,7 +235,7 @@ def cabecera_portada():
     """
     Imagen principal + redes; debajo van las pestañas (Streamlit) en Home.
     """
-    st.image(obtener_imagen(RUTA_IMAGEN_PORTADA), use_container_width=True)
+    st.image(obtener_imagen(RUTA_IMAGEN_PORTADA), width="stretch")
     st.markdown(
         f"""
         <div class="elafood-redes" style="text-align:center;margin:10px 0 6px 0;font-size:18px;">
@@ -363,6 +363,6 @@ def boton_vino_tinto(texto, key=None):
     return st.button(
         texto,
         key=key,
-        use_container_width=True,
+        width="stretch",
         help="Acceso restringido",
     )
