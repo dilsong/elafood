@@ -2,7 +2,13 @@
   "dias": {
     "lunes": {
       "comidas": [
-        "produ_001"
+        "produ_001",
+        "produ_0041",
+        "produ_003",
+        "produ_0022",
+        "produ_004",
+        "produ_002",
+        "produ_0021"
       ],
       "postres": [],
       "otros": []

@@ -12,7 +12,10 @@ from modules.config import (
     RUTA_LOGO_SALIDA,
     TELEFONO_ELAFOOD,
     TEXTO_AYUDA_CARRITO,
-    URL_SALIR_DESTINO,
+    URL_FACEBOOK,
+    URL_INSTAGRAM,
+    URL_QR_COMPARTIR,
+    URL_WHATSAPP,
 )
 from modules.imagenes import src_para_html
 from modules.estilo import cabecera_portada, estilos_app, expandir_sidebar_streamlit
@@ -29,9 +32,21 @@ WHATSAPP_SVG = (
 )
 SMS_SVG = (
     "<svg viewBox='0 0 24 24' aria-hidden='true'>"
-    "<path d='M20 3H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3v3l4-3h9a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 13H10.33L9 17H4V5h16v11z'/>"
+    "<path d='M12 3c-4.97 0-9 3.58-9 8 0 2.2 1 4.2 2.66 5.64L5 21l4.03-2.01c.93.24 1.93.37 2.97.37 4.97 0 9-3.58 9-8s-4.03-8-9-8zm-4 8.5A1.5 1.5 0 1 1 8 8.5a1.5 1.5 0 0 1 0 3zm4 0A1.5 1.5 0 1 1 12 8.5a1.5 1.5 0 0 1 0 3zm4 0A1.5 1.5 0 1 1 16 8.5a1.5 1.5 0 0 1 0 3z'/>"
     "</svg>"
 )
+
+
+def _html_con_negritas_desde_markdown(texto: str) -> str:
+    # Convierte pares **...** en <strong>...</strong> para el bloque HTML de ayuda.
+    partes = texto.split("**")
+    salida = []
+    for i, parte in enumerate(partes):
+        if i % 2 == 1:
+            salida.append(f"<strong>{html.escape(parte)}</strong>")
+        else:
+            salida.append(html.escape(parte))
+    return "".join(salida).replace("\n", "<br>")
 
 # ---------------------------------------------------------
 # CONFIGURACIÓN INICIAL
@@ -63,9 +78,13 @@ if "vista_salida" not in st.session_state:
 
 if st.session_state.vista_salida:
     # Vista de despedida: muestra logo centrado + mensajes con colores solicitados.
-    _c1, _c2, _c3 = st.columns([1, 2, 1])
-    with _c2:
-        st.image(RUTA_LOGO_SALIDA, width=170)
+    _src_logo_salida = html.escape(src_para_html(RUTA_LOGO_SALIDA), quote=True)
+    st.markdown(
+        "<div style='display:flex;justify-content:center;width:100%;margin:8px 0 8px 0;'>"
+        f"<img src='{_src_logo_salida}' alt='ElaFood' style='width:170px;height:auto;display:block;'/>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
     st.markdown(
         "<h1 style='color:#91241D;text-align:center;'>¡Gracias por visitar ElaFood!</h1>",
         unsafe_allow_html=True,
@@ -76,9 +95,22 @@ if st.session_state.vista_salida:
         "</div>",
         unsafe_allow_html=True,
     )
-    if URL_SALIR_DESTINO and URL_SALIR_DESTINO.strip():
-        st.link_button("Seguir a ElaFood en redes / web →", URL_SALIR_DESTINO.strip())
-    if st.button("Volver a la tienda", type="primary"):
+    _src_qr = html.escape(URL_QR_COMPARTIR, quote=True)
+    st.markdown(
+        f"""
+        <div style="text-align:center;margin:8px 0 8px 0;font-size:18px;">
+            <a href="{URL_INSTAGRAM}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">Instagram</a>
+            &nbsp;|&nbsp;
+            <a href="{URL_FACEBOOK}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">Facebook</a>
+            &nbsp;|&nbsp;
+            <a href="{URL_WHATSAPP}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">WhatsApp</a>
+            &nbsp;|&nbsp;
+            <a href="{_src_qr}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">Compartir QR</a>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("Volver a la tienda", type="primary", width="stretch"):
         st.session_state.vista_salida = False
         st.rerun()
     st.stop()
@@ -106,12 +138,19 @@ if "_flash_nuevo_pedido" not in st.session_state:
 
 cabecera_portada()
 
+# Mini logo junto al control del sidebar (arriba izquierda, al lado de »/≡).
+_src_badge = html.escape(src_para_html(RUTA_ICONO_APP), quote=True)
 st.markdown(
-    f"<div class='elafood-note'>{TEXTO_AYUDA_CARRITO.replace('**', '')}</div>",
+    f"<div class='elafood-sidebar-badge'><img src='{_src_badge}' alt='Carrito ElaFood' /></div>",
     unsafe_allow_html=True,
 )
 
-tab1, tab2 = st.tabs(["Platos de la Semana", "Postres y Especialidades"])
+st.markdown(
+    f"<div class='elafood-note'>{_html_con_negritas_desde_markdown(TEXTO_AYUDA_CARRITO)}</div>",
+    unsafe_allow_html=True,
+)
+
+tab1, tab2 = st.tabs(["Postres y Especialidades", "Platos de la Semana"])
 
 
 def _render_platos_columna(dia: str, pids: list, titulo: str):
@@ -136,11 +175,39 @@ def _render_platos_columna(dia: str, pids: list, titulo: str):
             st.session_state["_flash_agregado_carrito"] = f"{cantidad}× {p['nombre']}"
             st.session_state["_expand_sidebar_tras_agregar"] = True
 
+# =========================================================
+# Postres y Especialidades (pestaña Esp. en Quienes Somos!)
+# =========================================================
+with tab1:
+    st.markdown(INTRO_POSTRES_ESPECIALIDADES)
+    st.markdown("---")
 
+    data = cargar_menu_semana()
+    esp = data.get("especial") or {"comidas": [], "postres": [], "otros": []}
+    titulos_col = {"comidas": "Comidas", "postres": "Postres", "otros": "Otros"}
+
+    alguno_esp = any(esp.get(k) for k in ("comidas", "postres", "otros"))
+
+    if not alguno_esp:
+        st.info(
+            "Aún no hay platos en **Especial**. "
+            "El chef puede cargarlos en **Quienes Somos!** → pestaña **Esp.**"
+        )
+    else:
+        st.markdown(
+            "<h2 style='color:#91241D;'>Especial</h2>",
+            unsafe_allow_html=True,
+        )
+        for col_key in ("comidas", "postres", "otros"):
+            _render_platos_columna(
+                "especial",
+                esp.get(col_key) or [],
+                titulos_col[col_key],
+            )
 # =========================================================
 # Platos de la Semana (Lun–Dom en Quienes Somos!)
 # =========================================================
-with tab1:
+with tab2:
     st.markdown(INTRO_PLATOS_SEMANA)
     st.markdown("---")
 
@@ -173,38 +240,7 @@ with tab1:
                     bloque.get(col_key) or [],
                     titulos_col[col_key],
                 )
-
-
 # =========================================================
-# Postres y Especialidades (pestaña Esp. en Quienes Somos!)
-# =========================================================
-with tab2:
-    st.markdown(INTRO_POSTRES_ESPECIALIDADES)
-    st.markdown("---")
-
-    data = cargar_menu_semana()
-    esp = data.get("especial") or {"comidas": [], "postres": [], "otros": []}
-    titulos_col = {"comidas": "Comidas", "postres": "Postres", "otros": "Otros"}
-
-    alguno_esp = any(esp.get(k) for k in ("comidas", "postres", "otros"))
-
-    if not alguno_esp:
-        st.info(
-            "Aún no hay platos en **Especial**. "
-            "El chef puede cargarlos en **Quienes Somos!** → pestaña **Esp.**"
-        )
-    else:
-        st.markdown(
-            "<h2 style='color:#91241D;'>Especial</h2>",
-            unsafe_allow_html=True,
-        )
-        for col_key in ("comidas", "postres", "otros"):
-            _render_platos_columna(
-                "especial",
-                esp.get(col_key) or [],
-                titulos_col[col_key],
-            )
-
 msg_flash = st.session_state.pop("_flash_agregado_carrito", None)
 if msg_flash:
     _src_ico = html.escape(src_para_html(RUTA_ICONO_MINI_CARRITO), quote=True)
@@ -253,24 +289,27 @@ if generar:
         )
 
 if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
-    st.sidebar.markdown(
-        (
-            f"<a class='elafood-send-link' href='{st.session_state.link}' target='_blank'>"
-            f"<span class='elafood-send-icon'>{WHATSAPP_SVG}</span>"
-            "<span>Enviar por WhatsApp</span>"
-            "</a>"
-        ),
-        unsafe_allow_html=True,
-    )
-    st.sidebar.markdown(
-        (
-            f"<a class='elafood-send-link' href='{st.session_state.link_sms}' target='_blank'>"
-            f"<span class='elafood-send-icon'>{SMS_SVG}</span>"
-            "<span>Enviar por Mensaje de Texto</span>"
-            "</a>"
-        ),
-        unsafe_allow_html=True,
-    )
+    c_wsp, c_msg = st.sidebar.columns(2)
+    with c_wsp:
+        st.markdown(
+            (
+                f"<a class='elafood-send-link' href='{st.session_state.link}' target='_blank'>"
+                f"<span class='elafood-send-icon'>{WHATSAPP_SVG}</span>"
+                "<span>WSP</span>"
+                "</a>"
+            ),
+            unsafe_allow_html=True,
+        )
+    with c_msg:
+        st.markdown(
+            (
+                f"<a class='elafood-send-link' href='{st.session_state.link_sms}' target='_blank'>"
+                f"<span class='elafood-send-icon'>{SMS_SVG}</span>"
+                "<span>MSG</span>"
+                "</a>"
+            ),
+            unsafe_allow_html=True,
+        )
 
     # Confirmación explícita para habilitar "Hacer nuevo pedido".
     if not st.session_state.envio_confirmado:

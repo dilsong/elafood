@@ -6,36 +6,103 @@
 PRODUCTOS = {
     "produ_001": {
         "nombre": "Pabellón",
-        "precio": 12,
+        "precio": 15,
         "categoria": "lunch",
         "imagen": "Imagenes/Comidas/Lunch/pabellon.jpg",
         "descripcion": "El pabellón criollo es un plato tradicional venezolano que consiste en arroz blanco, carne mechada (carne de res deshebrada), caraotas negras (frijoles) y tajadas de plátano maduro frito."
+        " The pabellón criollo is a traditional Venezuelan dish that consists of white rice, shredded beef, black beans, and fried ripe plantain slices."
+    },
+    "produ_0011": {
+        "nombre": "Milanesa de Pollo",
+        "precio": 15,
+        "categoria": "lunch",
+        "imagen": "Imagenes/Comidas/Lunch/milanesapollo.jpg",
+        "descripcion": "La milanesa de pollo es un plato popular que consiste en pechugas de pollo empanizadas y fritas hasta obtener una textura crujiente por fuera y jugosa por dentro."
+        " The chicken milanesa is a popular dish that consists of breaded and fried chicken breasts until they achieve a crispy texture on the outside and juicy on the inside."
+    },
+    "produ_0012": {
+        "nombre": "Hervido de Res y Pollo",
+        "precio": 15,
+        "categoria": "lunch",
+        "imagen": "Imagenes/Comidas/Lunch/hervidoderesypollo.jpg",
+        "descripcion": "El hervido de res y pollo es un plato tradicional que consiste en carne de res y pollo cocinadas en una sopa cremosa."
+        " The beef and chicken stew is a traditional dish that consists of beef and chicken cooked in a creamy soup."
+    },
+
+    "produ_0013": {
+        "nombre": "Gordon Bleu",
+        "precio": 15,
+        "categoria": "lunch",
+        "imagen": "Imagenes/Comidas/Lunch/gordonbleu.jpg",
+        "descripcion": "El Gordon Bleu es un plato francés que consiste en pechugas de pollo rellenas de queso y empanizadas."
+        " The Gordon Bleu is a French dish that consists of chicken breasts filled with cheese and breaded."
+    },
+    "produ_0014": {
+        "nombre": "Fajitas",
+        "precio": 15,
+        "categoria": "lunch",
+        "imagen": "Imagenes/Comidas/Lunch/fajitas.jpg",
+        "descripcion": "Las fajitas son un plato mexicano que consiste en carne (generalmente pollo o res) servida con vegetales, granos y salsas."
+        " Fajitas are a Mexican dish that consists of meat (usually chicken or beef) served with vegetables and salsas."
+    },
+    "produ_0015": {
+        "nombre": "Chuleta de Cerdo",
+        "precio": 15,
+        "categoria": "lunch",
+        "imagen": "Imagenes/Comidas/Lunch/chuletadecerdo.jpg",
+        "descripcion": "La chuleta de cerdo es un plato delicioso que consiste en costillas de cerdo cocinadas a la parrilla o en el horno."
+        " The pork rib is a delicious dish that consists of pork ribs cooked on the grill or in the oven."
+    },
+    "produ_0016": {
+        "nombre": "Ceviche Mixto",
+        "precio": 15,
+        "categoria": "lunch",
+        "imagen": "Imagenes/Comidas/Lunch/cevichemixto.jpg",
+        "descripcion": "El ceviche mixto es un plato peruano que consiste en pescado y camaron crudo marinado en jugo de limón y acompañado con vegetales y salsas."
+        " The mixed ceviche is a Peruvian dish that consists of raw fish and shrimp marinated in lime juice and served with vegetables and salsas."
     },
 
     "produ_002": {
-        "nombre": "Pollo a la plancha",
-        "precio": 10,
+        "nombre": "Pollo al Horno",
+        "precio": 15,
         "categoria": "lunch",
-        "imagen": "Imagenes/Comidas/Lunch/pollo.jpg",
-        "descripcion": "El pollo a la plancha es un plato sencillo y saludable que consiste en pechugas de pollo cocinadas a la parrilla o en una sartén sin aceite."
+        "imagen": "Imagenes/Comidas/Lunch/polloalhorno.jpg",
+        "descripcion": "El pollo al horno es un plato sencillo y saludable que consiste en pechugas de pollo cocinadas en el horno."
+        " The chicken in the oven is a simple and healthy dish that consists of chicken breasts cooked in the oven."
+    },
+    "produ_0021": {
+        "nombre": "Pollo Guisado",
+        "precio": 15,
+        "categoria": "lunch",
+        "imagen": "Imagenes/Comidas/Lunch/polloguisado.jpg",
+        "descripcion": "El pollo guisado es un plato rico y sabroso que consiste en pechugas de pollo cocinadas en una salsa cremosa."
+        " The chicken stew is a rich and flavorful dish that consists of chicken breasts cooked in a creamy sauce."
+    },
+    "produ_0022": {
+        "nombre": "Pasticho",
+        "precio": 15,
+        "categoria": "lunch",
+        "imagen": "Imagenes/Comidas/Lunch/pasticho.jpg",
+        "descripcion": "El pasticho es un plato tradicional venezolano que consiste en carne molida cocinada con ingredientes especiados."
+        " The pasticho is a traditional Venezuelan dish that consists of seasoned ground meat cooked with spices."
     },
 
     "produ_003": {
         "nombre": "Hamburguesa",
-        "precio": 8,
+        "precio": 15,
         "categoria": "comida_rapida",
         "imagen": "Imagenes/Comidas/Rapidas/hamburguesa.jpg",
         "descripcion": "La hamburguesa es un plato de comida rápida que consiste en carne molida servida dentro de un pan redondo con ingredientes adicionales."
     },
 
-    "produ_004": {
-        "nombre": "Perro caliente",
-        "precio": 6,
+    "produ_0041": {
+        "nombre": "Enrrollado de Pollo-Carne",
+        "precio": 15,
         "categoria": "comida_rapida",
-        "imagen": "Imagenes/Comidas/Rapidas/perro.jpg",
-        "descripcion": "El perro caliente consiste en un pan de hot dog con una salchicha cocinada y acompañada con diversos ingredientes."
+        "imagen": "Imagenes/Comidas/Rapidas/enrrollado.jpg",
+        "descripcion": "Un delicioso enrrollado de pollo y carne, relleno con ingredientes frescos y sazonados."
+        " A delicious chicken and beef roll, filled with fresh and seasoned ingredients."
     },
-
     "produ_005": {
         "nombre": "Cuatro Leches",
         "precio": 50,
@@ -97,7 +164,7 @@ PRODUCTOS = {
         "nombre": "Quesillo",
         "precio": 30,
         "categoria": "postres",
-        "imagen": "Imagenes/Comidas/Postres/quesillo.jpeg",
+        "imagen": "Imagenes/Comidas/Postres/quesillo.jpg",
         "descripcion": "Postre venezolano hecho con leche condensada, huevos y azúcar, de textura suave."
         " Venezuelan dessert made with condensed milk, eggs, and sugar, with a smooth texture."        
     },

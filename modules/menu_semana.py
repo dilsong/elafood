@@ -38,6 +38,11 @@ def _bloque_vacio() -> dict:
     return {"comidas": [], "postres": [], "otros": []}
 
 
+def _filtrar_ids_validos(ids: list) -> list:
+    # Mantiene solo productos que siguen existiendo en PRODUCTOS.
+    return [pid for pid in ids if pid in PRODUCTOS]
+
+
 def menu_semana_por_defecto() -> dict:
     return {
         "dias": {d: _bloque_vacio() for d in DIAS_ORDEN},
@@ -60,19 +65,38 @@ def cargar_menu_semana() -> dict:
 
     base = menu_semana_por_defecto()
     dias = data.get("dias") or {}
+    hubo_limpieza = False
     for d in DIAS_ORDEN:
         bloque = dias.get(d) or {}
+        comidas = list(bloque.get("comidas") or [])
+        postres = list(bloque.get("postres") or [])
+        otros = list(bloque.get("otros") or [])
+        comidas_ok = _filtrar_ids_validos(comidas)
+        postres_ok = _filtrar_ids_validos(postres)
+        otros_ok = _filtrar_ids_validos(otros)
+        if (comidas_ok != comidas) or (postres_ok != postres) or (otros_ok != otros):
+            hubo_limpieza = True
         base["dias"][d] = {
-            "comidas": list(bloque.get("comidas") or []),
-            "postres": list(bloque.get("postres") or []),
-            "otros": list(bloque.get("otros") or []),
+            "comidas": comidas_ok,
+            "postres": postres_ok,
+            "otros": otros_ok,
         }
     esp = data.get("especial") or {}
+    esp_comidas = list(esp.get("comidas") or [])
+    esp_postres = list(esp.get("postres") or [])
+    esp_otros = list(esp.get("otros") or [])
+    esp_comidas_ok = _filtrar_ids_validos(esp_comidas)
+    esp_postres_ok = _filtrar_ids_validos(esp_postres)
+    esp_otros_ok = _filtrar_ids_validos(esp_otros)
+    if (esp_comidas_ok != esp_comidas) or (esp_postres_ok != esp_postres) or (esp_otros_ok != esp_otros):
+        hubo_limpieza = True
     base["especial"] = {
-        "comidas": list(esp.get("comidas") or []),
-        "postres": list(esp.get("postres") or []),
-        "otros": list(esp.get("otros") or []),
+        "comidas": esp_comidas_ok,
+        "postres": esp_postres_ok,
+        "otros": esp_otros_ok,
     }
+    if hubo_limpieza:
+        guardar_menu_semana(base)
     return base
 
 

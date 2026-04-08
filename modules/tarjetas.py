@@ -107,24 +107,28 @@ def tarjeta_acerca_chef():
             </div>
         </div>        
 
-        <p style="font-size:16px; line-height:1.6; color:#333;">
+        <p style="font-size:16px; line-height:1.6; color:#333; margin:0 0 12px 0;">
             Somos un negocio familiar nacido del amor por los postres y la comida hecha en casa.
             Cada plato, postre y detalle lo preparamos con dedicación, cariño y ese sabor casero 
             que hace sentir como en familia.
-
-            Nuestra visión es ayudarte a disfrutar de comidas frescas, sanas y balanceadas, 
+        </p>
+        <p style="font-size:16px; line-height:1.6; color:#333; margin:0 0 12px 0;">
+            Nuestra visión es ayudarte a disfrutar de comidas frescas, sanas y balanceadas,
             especialmente con nuestros almuerzos semanales, pensados para facilitar tu día 
             sin renunciar al buen sabor.
-
+        </p>
+        <p style="font-size:16px; line-height:1.6; color:#333; margin:0 0 12px 0;">
             Además, estamos desarrollando un menú saludable con información de macros y 
             proteína, ideal para quienes desean llevar una alimentación más consciente y 
             adaptada a sus objetivos.
-
-            Y para los amantes del dulce, creamos postres caseros irresistibles, llenos de 
-            **sabor**, **amor** y ese toque especial que solo lo **hecho en casa puede o
-            frecer**.
-
-            Llevar a cada hogar comida casera, fresca y deliciosa, preparada con amor, 
+        </p>
+        <p style="font-size:16px; line-height:1.6; color:#333; margin:0 0 12px 0;">
+            Y para los amantes del dulce, creamos postres caseros irresistibles, llenos de
+            <strong>sabor</strong>, <strong>amor</strong> y ese toque especial que solo lo
+            <strong>hecho en casa puede ofrecer</strong>.
+        </p>
+        <p style="font-size:16px; line-height:1.6; color:#333; margin:0;">
+            Llevar a cada hogar comida casera, fresca y deliciosa, preparada con amor,
             ofreciendo opciones balanceadas para el día a día y postres que 
             alegren cualquier momento.
         </p>

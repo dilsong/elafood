@@ -10,6 +10,7 @@ from modules.imagenes import obtener_imagen, src_para_html
 
 from modules.config import (
     RUTA_IMAGEN_PORTADA,
+    URL_QR_COMPARTIR,
     URL_FACEBOOK,
     URL_INSTAGRAM,
     URL_WHATSAPP,
@@ -133,6 +134,7 @@ def estilos_app():
         .elafood-send-link {
             display: flex !important;
             align-items: center !important;
+            justify-content: center !important;
             gap: 10px !important;
             padding: 10px 12px !important;
             margin: 6px 0 !important;
@@ -141,6 +143,8 @@ def estilos_app():
             background: #91241D !important;
             color: #fff !important;
             font-weight: 600 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
         .elafood-send-link:hover {
             background: #761d17 !important;
@@ -164,6 +168,34 @@ def estilos_app():
             height: 18px !important;
             fill: #91241D !important;
             display: block !important;
+        }
+
+        /* Mini logo junto al control del sidebar (arriba izquierda) */
+        .elafood-sidebar-badge {
+            position: fixed !important;
+            top: 0.56rem !important;
+            left: 2.55rem !important;
+            z-index: 999991 !important;
+            width: 26px !important;
+            height: 26px !important;
+            border-radius: 999px !important;
+            overflow: hidden !important;
+            border: 2px solid #fff !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+            pointer-events: none !important;
+        }
+        .elafood-sidebar-badge img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            display: block !important;
+        }
+
+        /* En móvil, centrar imagen cuando columnas se apilan */
+        section.main [data-testid="stImage"] img {
+            display: block !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
         }
 
         /* Aviso al agregar: debajo de la barra (no tapa «» del sidebar) */
@@ -236,6 +268,7 @@ def cabecera_portada():
     Imagen principal + redes; debajo van las pestañas (Streamlit) en Home.
     """
     st.image(obtener_imagen(RUTA_IMAGEN_PORTADA), width="stretch")
+    qr_src = URL_QR_COMPARTIR
     st.markdown(
         f"""
         <div class="elafood-redes" style="text-align:center;margin:10px 0 6px 0;font-size:18px;">
@@ -244,6 +277,8 @@ def cabecera_portada():
             <a href="{URL_FACEBOOK}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">Facebook</a>
             &nbsp;|&nbsp;
             <a href="{URL_WHATSAPP}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">WhatsApp</a>
+            &nbsp;|&nbsp;
+            <a href="{qr_src}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">Compartir QR</a>
         </div>
         """,
         unsafe_allow_html=True,

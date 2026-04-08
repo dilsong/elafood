@@ -11,6 +11,9 @@ RUTA_ICONO_MINI_CARRITO = "Imagenes/Logos/carritoweb.jpg"
 
 # Logo usado en la pantalla de salida (centro de la vista de despedida).
 RUTA_LOGO_SALIDA = "Imagenes/Logos/logo.jpg"
+# QR para compartir la app.
+RUTA_QR_COMPARTIR = "Imagenes/Logos/qr_elafood.png"
+URL_QR_COMPARTIR = "https://api.qrserver.com/v1/create-qr-code/?size=900x900&color=145-36-29&bgcolor=255-255-255&data=https%3A%2F%2Felafood.streamlit.app"
 
 # Imagen grande bajo la cabecera (antes era el banner). Ajusta a tu archivo.
 RUTA_IMAGEN_PORTADA = "Imagenes/fondo.jpg"
