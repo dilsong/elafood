@@ -1,5 +1,6 @@
 import urllib.parse
 
+from modules.i18n import tr
 from modules.menu_semana import etiqueta_dia
 from modules.productos import es_comida_lunch_o_rapida_por_nombre
 
@@ -13,19 +14,19 @@ def _nombre_linea_pedido(item: dict) -> str:
 
 
 def generar_mensaje(carrito, total, cliente):
-    mensaje = "Pedido ElaFood:\n\n"
+    mensaje = tr("Pedido ElaFood:\n\n", "ElaFood Order:\n\n")
 
-    mensaje += f"Cliente: {cliente['nombre']}\n"
-    mensaje += f"Teléfono: {cliente['telefono']}\n"
-    mensaje += f"Dirección: {cliente['direccion']}\n"
-    mensaje += f"Notas: {cliente['notas']}\n\n"
+    mensaje += f"{tr('Cliente', 'Customer')}: {cliente['nombre']}\n"
+    mensaje += f"{tr('Teléfono', 'Phone')}: {cliente['telefono']}\n"
+    mensaje += f"{tr('Dirección', 'Address')}: {cliente['direccion']}\n"
+    mensaje += f"{tr('Notas', 'Notes')}: {cliente['notas']}\n\n"
 
     for item in carrito:
         nombre = _nombre_linea_pedido(item)
         linea = f"- {item['cantidad']} x {nombre} = ${item['precio'] * item['cantidad']}"
         mensaje += linea + "\n"
 
-    mensaje += f"\nTotal: ${total}"
+    mensaje += f"\n{tr('Total', 'Total')}: ${total}"
     return mensaje
 
 

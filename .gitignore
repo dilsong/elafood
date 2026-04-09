@@ -4,3 +4,4 @@ r.txt
 
 __pycache__/
 *.py[cod]
+data/clientes_privados.csv

@@ -2,6 +2,7 @@ import streamlit as st
 
 from modules.chef_module import validar_pin, vista_panel_chef
 from modules.config import RUTA_ICONO_APP
+from modules.i18n import tr
 from modules.estilo import boton_vino_tinto, estilos_app
 from modules.tarjetas import tarjeta_acerca_chef
 
@@ -27,7 +28,9 @@ except Exception:
 st.markdown(
     """
     <h1 style='color:#91241D; text-align:center; margin-bottom:10px;'>
-        Quienes Somos!
+        """
+    + tr("Quienes Somos!", "Who We Are!")
+    + """
     </h1>
     """,
     unsafe_allow_html=True,
@@ -41,15 +44,15 @@ if "mostrar_pin" not in st.session_state:
     st.session_state.mostrar_pin = False
 
 if not st.session_state.mostrar_pin:
-    if boton_vino_tinto("🔐 Entrar al Panel del Chef", key="btn_acceso"):
+    if boton_vino_tinto(tr("🔐 Entrar al Panel del Chef", "🔐 Enter Chef Panel"), key="btn_acceso"):
         st.session_state.mostrar_pin = True
         st.rerun()
 else:
     # Validación de PIN para habilitar la configuración de menú.
-    pin_ingresado = st.text_input("Ingrese el PIN del Chef", type="password")
+    pin_ingresado = st.text_input(tr("Ingrese el PIN del Chef", "Enter Chef PIN"), type="password")
     if pin_ingresado:
         if validar_pin(pin_ingresado):
-            st.success("Acceso concedido")
+            st.success(tr("Acceso concedido", "Access granted"))
             vista_panel_chef()
         else:
-            st.error("PIN incorrecto")
+            st.error(tr("PIN incorrecto", "Wrong PIN"))

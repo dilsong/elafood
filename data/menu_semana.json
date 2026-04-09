@@ -6,7 +6,6 @@
         "produ_0041",
         "produ_003",
         "produ_0022",
-        "produ_004",
         "produ_002",
         "produ_0021"
       ],
@@ -14,9 +13,7 @@
       "otros": []
     },
     "martes": {
-      "comidas": [
-        "produ_004"
-      ],
+      "comidas": [],
       "postres": [],
       "otros": []
     },
@@ -29,7 +26,10 @@
     },
     "jueves": {
       "comidas": [
-        "produ_003"
+        "produ_003",
+        "produ_0031",
+        "produ_0032",
+        "produ_0041"
       ],
       "postres": [],
       "otros": []

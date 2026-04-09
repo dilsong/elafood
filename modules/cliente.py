@@ -1,7 +1,9 @@
 import streamlit as st
+from modules.i18n import tr
+
 
 def formulario_cliente():
-    st.sidebar.markdown("### Datos del cliente")
+    st.sidebar.markdown(f"### {tr('Datos del cliente', 'Client details')}")
 
     if "cliente" not in st.session_state:
         st.session_state.cliente = {
@@ -12,22 +14,22 @@ def formulario_cliente():
         }
 
     st.session_state.cliente["nombre"] = st.sidebar.text_input(
-        "Nombre",
+        tr("Nombre", "Name"),
         value=st.session_state.cliente["nombre"]
     )
 
     st.session_state.cliente["telefono"] = st.sidebar.text_input(
-        "Teléfono",
+        tr("Teléfono", "Phone"),
         value=st.session_state.cliente["telefono"]
     )
 
     st.session_state.cliente["direccion"] = st.sidebar.text_area(
-        "Dirección",
+        tr("Dirección", "Address"),
         value=st.session_state.cliente["direccion"]
     )
 
     st.session_state.cliente["notas"] = st.sidebar.text_area(
-        "Notas adicionales",
+        tr("Notas adicionales", "Additional notes"),
         value=st.session_state.cliente["notas"]
     )
 

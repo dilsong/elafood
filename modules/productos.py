@@ -94,6 +94,22 @@ PRODUCTOS = {
         "imagen": "Imagenes/Comidas/Rapidas/hamburguesa.jpg",
         "descripcion": "La hamburguesa es un plato de comida rápida que consiste en carne molida servida dentro de un pan redondo con ingredientes adicionales."
     },
+    "produ_0031": {
+        "nombre": "Arepas de Carne Mechada-Pollo",
+        "precio": 15,
+        "categoria": "comida_rapida",
+        "imagen": "Imagenes/Comidas/Rapidas/arepas.jpg",
+        "descripcion": "Combo de Tres Arepas de Carne Mechada o Pollo"
+        " The arepas with shredded meat or chicken are a Venezuelan dish that consists of arepas filled with shredded meat and served with sauce."
+    },
+    "produ_0032": {
+        "nombre": "Empanadas de Carne Mechada-Pollo-Queso",
+        "precio": 15,
+        "categoria": "comida_rapida",
+        "imagen": "Imagenes/Comidas/Rapidas/empanadas.jpg",
+        "descripcion": "Combo de Tres Empanadas de Carne Mechada-Pollo-Queso"
+        " The empanadas with shredded meat are a Venezuelan dish that consists of empanadas filled with shredded meat and served with sauce."
+    },
 
     "produ_0041": {
         "nombre": "Enrrollado de Pollo-Carne",

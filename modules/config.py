@@ -13,7 +13,7 @@ RUTA_ICONO_MINI_CARRITO = "Imagenes/Logos/carritoweb.jpg"
 RUTA_LOGO_SALIDA = "Imagenes/Logos/logo.jpg"
 # QR para compartir la app.
 RUTA_QR_COMPARTIR = "Imagenes/Logos/qr_elafood.png"
-URL_QR_COMPARTIR = "https://api.qrserver.com/v1/create-qr-code/?size=900x900&color=145-36-29&bgcolor=255-255-255&data=https%3A%2F%2Felafood.streamlit.app"
+URL_QR_COMPARTIR = "https://api.qrserver.com/v1/create-qr-code/?size=900x900&color=145-36-29&bgcolor=255-255-255&data=https%3A%2F%2Felafood.streamlit.app%3Fsrc%3Dqr"
 
 # Imagen grande bajo la cabecera (antes era el banner). Ajusta a tu archivo.
 RUTA_IMAGEN_PORTADA = "Imagenes/fondo.jpg"
@@ -35,6 +35,6 @@ INTRO_POSTRES_ESPECIALIDADES = (
 
 TEXTO_AYUDA_CARRITO = (
     "Mira en el **Carrito** **≡** o **»** arriba a la izquierda para abrir el **menú lateral**: "
-    "allí encontrarás tu **Pedido**, agrega tud datos y presiona el boton "
+    "allí encontrarás tu **Pedido**, agrega tus datos y presiona el boton "
     "**Generar Pedido** / **Enviar a WhatsApp** / **Enviar por Mensaje de Texto**."
 )

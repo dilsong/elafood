@@ -1,9 +1,11 @@
 import html
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from modules.carrito import agregar, mostrar_carrito
 from modules.cliente import formulario_cliente
+from modules.clientes_csv import registrar_cliente_csv
 from modules.config import (
     INTRO_PLATOS_SEMANA,
     INTRO_POSTRES_ESPECIALIDADES,
@@ -48,6 +50,65 @@ def _html_con_negritas_desde_markdown(texto: str) -> str:
             salida.append(html.escape(parte))
     return "".join(salida).replace("\n", "<br>")
 
+
+TEXTOS = {
+    "ES": {
+        "tabs": ["Postres y Especialidades", "Platos de la Semana"],
+        "salir_titulo": "¡Gracias por visitar ElaFood!",
+        "salir_msg": "Ya puedes cerrar esta pestaña del navegador o volver cuando quieras.",
+        "volver": "Volver a la tienda",
+        "generar": "Generar pedido",
+        "confirmar": "Confirmar envío",
+        "nuevo": "Hacer nuevo pedido",
+        "salir": "🚪 Salir",
+        "pedido_ok": "Pedido generado. Elige WhatsApp o Mensaje de Texto.",
+        "nombre_req": "Por favor ingresa el nombre del cliente.",
+        "nuevo_ok": "Listo. Puedes comenzar un nuevo pedido.",
+        "idioma": "Idioma / Language",
+        "wsp": "WSP",
+        "msg": "MSG",
+        "gracias": "Gracias por preferirnos",
+        "onb_title": "Instala ElaFood en tu teléfono",
+        "onb_body": "Para acceso rápido, usa 'Añadir a pantalla de inicio' desde el menú del navegador.",
+        "onb_ios": "iPhone (Safari): Compartir → Añadir a pantalla de inicio.",
+        "onb_android": "Android (Chrome): menú ⋮ → Añadir a pantalla de inicio.",
+        "intro_postres": INTRO_POSTRES_ESPECIALIDADES,
+        "intro_platos": INTRO_PLATOS_SEMANA,
+        "esp_vacio": "Aún no hay platos en Especial. El chef puede cargarlos en Quienes Somos! → pestaña Esp.",
+        "semana_vacio": "Aún no hay platos publicados para estos días. El chef puede configurarlos en Quienes Somos! (Lunes a Domingo).",
+    },
+    "EN": {
+        "tabs": ["Desserts & Specialties", "Weekly Dishes"],
+        "salir_titulo": "Thanks for visiting ElaFood!",
+        "salir_msg": "You can close this browser tab now or come back anytime.",
+        "volver": "Back to store",
+        "generar": "Generate order",
+        "confirmar": "Confirm send",
+        "nuevo": "Start new order",
+        "salir": "🚪 Exit",
+        "pedido_ok": "Order ready. Choose WhatsApp or Text Message.",
+        "nombre_req": "Please enter customer name.",
+        "nuevo_ok": "Done. You can start a new order.",
+        "idioma": "Idioma / Language",
+        "wsp": "WSP",
+        "msg": "MSG",
+        "gracias": "Thank you for choosing us",
+        "onb_title": "Install ElaFood on your phone",
+        "onb_body": "For quick access, use 'Add to Home screen' from your browser menu.",
+        "onb_ios": "iPhone (Safari): Share → Add to Home Screen.",
+        "onb_android": "Android (Chrome): menu ⋮ → Add to Home screen.",
+        "intro_postres": "Available by pre-order only. Every order is prepared in advance to ensure freshness and quality.",
+        "intro_platos": "A different menu every week, with a special dish for each day. Receive ready-to-heat lunches and save time without giving up homemade flavor.",
+        "esp_vacio": "There are no dishes in Special yet. The chef can load them in Who We Are! → Sp. tab.",
+        "semana_vacio": "No dishes are published for these days yet. The chef can configure them in Who We Are! (Monday to Sunday).",
+    },
+}
+
+
+def t(clave: str) -> str:
+    # i18n desactivado temporalmente: se fuerza español por defecto.
+    return TEXTOS["ES"].get(clave, clave)
+
 # ---------------------------------------------------------
 # CONFIGURACIÓN INICIAL
 # ---------------------------------------------------------
@@ -75,6 +136,7 @@ except Exception:
 
 if "vista_salida" not in st.session_state:
     st.session_state.vista_salida = False
+st.session_state.lang = "ES"
 
 if st.session_state.vista_salida:
     # Vista de despedida: muestra logo centrado + mensajes con colores solicitados.
@@ -86,12 +148,12 @@ if st.session_state.vista_salida:
         unsafe_allow_html=True,
     )
     st.markdown(
-        "<h1 style='color:#91241D;text-align:center;'>¡Gracias por visitar ElaFood!</h1>",
+        f"<h1 style='color:#91241D;text-align:center;'>{t('salir_titulo')}</h1>",
         unsafe_allow_html=True,
     )
     st.markdown(
         "<div class='elafood-note' style='text-align:center;'>"
-        "Ya puedes <strong>cerrar esta pestaña</strong> del navegador o volver cuando quieras."
+        f"{t('salir_msg')}"
         "</div>",
         unsafe_allow_html=True,
     )
@@ -110,7 +172,7 @@ if st.session_state.vista_salida:
         """,
         unsafe_allow_html=True,
     )
-    if st.button("Volver a la tienda", type="primary", width="stretch"):
+    if st.button(t("volver"), type="primary", width="stretch"):
         st.session_state.vista_salida = False
         st.rerun()
     st.stop()
@@ -132,6 +194,8 @@ if "pedido_generado" not in st.session_state:
 
 if "envio_confirmado" not in st.session_state:
     st.session_state.envio_confirmado = False
+if "_flash_gracias" not in st.session_state:
+    st.session_state._flash_gracias = False
 
 if "_flash_nuevo_pedido" not in st.session_state:
     st.session_state._flash_nuevo_pedido = False
@@ -146,11 +210,31 @@ st.markdown(
 )
 
 st.markdown(
-    f"<div class='elafood-note'>{_html_con_negritas_desde_markdown(TEXTO_AYUDA_CARRITO)}</div>",
+    (
+        f"<div class='elafood-note' style='display:flex;align-items:flex-start;gap:10px;'>"
+        f"<img src='{_src_badge}' alt='Carrito ElaFood' "
+        "style='width:22px;height:22px;border-radius:999px;flex-shrink:0;margin-top:2px;'/>"
+        f"<div>{_html_con_negritas_desde_markdown(TEXTO_AYUDA_CARRITO)}</div>"
+        "</div>"
+    ),
     unsafe_allow_html=True,
 )
 
-tab1, tab2 = st.tabs(["Postres y Especialidades", "Platos de la Semana"])
+# Onboarding cuando entra desde QR (?src=qr) o en primer ingreso.
+_src_qr_param = str(st.query_params.get("src", "")).lower()
+if _src_qr_param == "qr" and not st.session_state.get("_onb_seen"):
+    st.markdown(
+        (
+            f"<div class='elafood-note'><strong>{t('onb_title')}</strong><br>"
+            f"{t('onb_body')}<br>"
+            f"• {t('onb_ios')}<br>"
+            f"• {t('onb_android')}</div>"
+        ),
+        unsafe_allow_html=True,
+    )
+    st.session_state["_onb_seen"] = True
+
+tab1, tab2 = st.tabs(t("tabs"))
 
 
 def _render_platos_columna(dia: str, pids: list, titulo: str):
@@ -179,7 +263,10 @@ def _render_platos_columna(dia: str, pids: list, titulo: str):
 # Postres y Especialidades (pestaña Esp. en Quienes Somos!)
 # =========================================================
 with tab1:
-    st.markdown(INTRO_POSTRES_ESPECIALIDADES)
+    st.markdown(
+        f"<div style='font-size:18px;line-height:1.55;'>{html.escape(t('intro_postres'))}</div>",
+        unsafe_allow_html=True,
+    )
     st.markdown("---")
 
     data = cargar_menu_semana()
@@ -189,10 +276,7 @@ with tab1:
     alguno_esp = any(esp.get(k) for k in ("comidas", "postres", "otros"))
 
     if not alguno_esp:
-        st.info(
-            "Aún no hay platos en **Especial**. "
-            "El chef puede cargarlos en **Quienes Somos!** → pestaña **Esp.**"
-        )
+        st.info(t("esp_vacio"))
     else:
         st.markdown(
             "<h2 style='color:#91241D;'>Especial</h2>",
@@ -208,7 +292,10 @@ with tab1:
 # Platos de la Semana (Lun–Dom en Quienes Somos!)
 # =========================================================
 with tab2:
-    st.markdown(INTRO_PLATOS_SEMANA)
+    st.markdown(
+        f"<div style='font-size:18px;line-height:1.55;'>{html.escape(t('intro_platos'))}</div>",
+        unsafe_allow_html=True,
+    )
     st.markdown("---")
 
     data = cargar_menu_semana()
@@ -220,10 +307,7 @@ with tab2:
     )
 
     if not alguno:
-        st.info(
-            "Aún no hay platos publicados para estos días. "
-            "El chef puede configurarlos en la página **Quienes Somos!** (Lunes a Domingo)."
-        )
+        st.info(t("semana_vacio"))
     else:
         for dia in DIAS_ORDEN:
             bloque = data["dias"][dia]
@@ -262,18 +346,23 @@ if st.session_state.pop("_expand_sidebar_tras_agregar", False):
 total = mostrar_carrito()
 cliente = formulario_cliente()
 
-st.sidebar.markdown("---")
-
 hay_productos = len(st.session_state.carrito) > 0
 
 if not st.session_state.pedido_generado:
-    generar = st.sidebar.button("Generar pedido", disabled=not hay_productos)
+    generar = st.sidebar.button(t("generar"), disabled=not hay_productos)
 else:
     generar = False
 
 if generar:
-    if cliente["nombre"] == "":
-        st.sidebar.warning("Por favor ingresa el nombre del cliente.")
+    nombre_ok = bool((cliente.get("nombre") or "").strip())
+    telefono_ok = bool((cliente.get("telefono") or "").strip())
+    if not nombre_ok or not telefono_ok:
+        if not nombre_ok and not telefono_ok:
+            st.sidebar.warning("Debes ingresar **Nombre** y **Teléfono** para generar el pedido.")
+        elif not nombre_ok:
+            st.sidebar.warning("Debes ingresar el **Nombre** para generar el pedido.")
+        else:
+            st.sidebar.warning("Debes ingresar el **Teléfono** para generar el pedido.")
     else:
         # Generar el contenido del pedido para WhatsApp y SMS.
         mensaje = generar_mensaje(st.session_state.carrito, total, cliente)
@@ -284,41 +373,45 @@ if generar:
         st.session_state.pedido_generado = True
         st.session_state.envio_confirmado = False
         st.sidebar.markdown(
-            "<div class='elafood-note'>Pedido generado. Elige WhatsApp o Mensaje de Texto.</div>",
+            f"<div class='elafood-note'>{t('pedido_ok')}</div>",
             unsafe_allow_html=True,
         )
 
 if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
     c_wsp, c_msg = st.sidebar.columns(2)
     with c_wsp:
-        st.markdown(
-            (
-                f"<a class='elafood-send-link' href='{st.session_state.link}' target='_blank'>"
-                f"<span class='elafood-send-icon'>{WHATSAPP_SVG}</span>"
-                "<span>WSP</span>"
-                "</a>"
-            ),
-            unsafe_allow_html=True,
-        )
-    with c_msg:
-        st.markdown(
-            (
-                f"<a class='elafood-send-link' href='{st.session_state.link_sms}' target='_blank'>"
-                f"<span class='elafood-send-icon'>{SMS_SVG}</span>"
-                "<span>MSG</span>"
-                "</a>"
-            ),
-            unsafe_allow_html=True,
-        )
-
-    # Confirmación explícita para habilitar "Hacer nuevo pedido".
-    if not st.session_state.envio_confirmado:
-        if st.sidebar.button("Confirmar envío", width="stretch"):
+        if st.button(f"{t('wsp')}", key="btn_send_wsp", width="stretch"):
+            registrar_cliente_csv(cliente, "WSP")
             st.session_state.envio_confirmado = True
-            st.rerun()
+            st.session_state._flash_gracias = True
+            st.session_state["_redirect_url"] = st.session_state.link
+    with c_msg:
+        if st.button(f"{t('msg')}", key="btn_send_msg", width="stretch"):
+            registrar_cliente_csv(cliente, "MSG")
+            st.session_state.envio_confirmado = True
+            st.session_state._flash_gracias = True
+            st.session_state["_redirect_url"] = st.session_state.link_sms
+
+if st.session_state.get("_redirect_url"):
+    _go = st.session_state.pop("_redirect_url")
+    st.sidebar.markdown(
+        "<div class='elafood-note'>Abriendo aplicación de mensajería...</div>",
+        unsafe_allow_html=True,
+    )
+    st.sidebar.link_button("Si no abre, toca aquí", _go, width="stretch")
+    components.html(
+        f"<script>window.top.location.href='{_go}';</script>",
+        height=0,
+        width=0,
+    )
 
 if st.session_state.envio_confirmado:
-    if st.sidebar.button("Hacer nuevo pedido"):
+    if st.session_state.pop("_flash_gracias", False):
+        st.sidebar.markdown(
+            f"<div class='elafood-note'>{t('gracias')}</div>",
+            unsafe_allow_html=True,
+        )
+    if st.sidebar.button(t("nuevo")):
         # Reinicia el flujo completo de pedido (mantiene datos del cliente).
         st.session_state.carrito = []
         st.session_state.mensaje_generado = ""
@@ -331,11 +424,11 @@ if st.session_state.envio_confirmado:
 
 if st.session_state.pop("_flash_nuevo_pedido", False):
     st.sidebar.markdown(
-        "<div class='elafood-note'>Listo. Puedes comenzar un nuevo pedido.</div>",
+        f"<div class='elafood-note'>{t('nuevo_ok')}</div>",
         unsafe_allow_html=True,
     )
 
 st.sidebar.markdown("---")
-if st.sidebar.button("🚪 Salir", width="stretch", help="Cierra el flujo y muestra despedida"):
+if st.sidebar.button(t("salir"), width="stretch", help="Cierra el flujo y muestra despedida"):
     st.session_state.vista_salida = True
     st.rerun()

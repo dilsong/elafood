@@ -2,6 +2,7 @@ import hashlib
 
 import streamlit as st
 
+from modules.i18n import tr
 from modules.menu_semana import etiqueta_dia
 from modules.productos import es_comida_lunch_o_rapida_por_nombre
 
@@ -57,14 +58,14 @@ def _etiqueta_linea_carrito(producto: str, dia) -> str:
 
 def mostrar_carrito():
     st.sidebar.markdown(
-        "<div style='font-size:17px;font-weight:700;color:#91241D;margin-bottom:6px;'>Carrito</div>",
+        f"<div style='font-size:17px;font-weight:700;color:#91241D;margin-bottom:6px;'>{tr('Carrito', 'Cart')}</div>",
         unsafe_allow_html=True,
     )
 
     total = 0
 
     if len(st.session_state.carrito) == 0:
-        st.sidebar.write("Tu carrito está vacío.")
+        st.sidebar.write(tr("Tu carrito está vacío.", "Your cart is empty."))
         return 0
 
     for item in st.session_state.carrito:
@@ -82,7 +83,7 @@ def mostrar_carrito():
             st.session_state[sk] = cantidad
 
         st.sidebar.number_input(
-            "Uds.",
+            tr("Uds.", "Qty."),
             min_value=1,
             max_value=99,
             key=sk,
@@ -92,9 +93,9 @@ def mostrar_carrito():
 
         total += subtotal
 
-    st.sidebar.markdown(f"### Total: ${total}")
+    st.sidebar.markdown(f"### {tr('Total', 'Total')}: ${total}")
 
-    if st.sidebar.button("Vaciar carrito"):
+    if st.sidebar.button(tr("Vaciar carrito", "Clear cart")):
         vaciar_carrito()
         st.rerun()
 
