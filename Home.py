@@ -20,9 +20,11 @@ from modules.config import (
     URL_WHATSAPP,
 )
 from modules.imagenes import src_para_html
+from modules.pedidos_csv import registrar_pedido_csv
 from modules.estilo import cabecera_portada, estilos_app, expandir_sidebar_streamlit
 from modules.menu_semana import DIAS_ORDEN, ETIQUETA_DIA, cargar_menu_semana
 from modules.productos import PRODUCTOS
+from modules.supabase_store import registrar_pedido_supabase
 from modules.tarjetas import tarjeta_producto_hoy
 from modules.whatsapp import generar_link_sms, generar_link_whatsapp, generar_mensaje
 
@@ -69,8 +71,8 @@ TEXTOS = {
         "msg": "MSG",
         "gracias": "Gracias por preferirnos",
         "onb_title": "Instala ElaFood en tu teléfono",
-        "onb_body": "Para acceso rápido, usa 'Añadir a pantalla de inicio' desde el menú del navegador.",
-        "onb_ios": "iPhone (Safari): Compartir → Añadir a pantalla de inicio.",
+        "onb_body": "Para acceso rápido, usa 'Añadir a pantalla de inicio' da click a los ... abajo a la derecha.",
+        "onb_ios": "iPhone (Safari): Compartir → Ver mas -> Agregar a Inicio. -> Reemplaza Streamlit por ElaFood",
         "onb_android": "Android (Chrome): menú ⋮ → Añadir a pantalla de inicio.",
         "intro_postres": INTRO_POSTRES_ESPECIALIDADES,
         "intro_platos": INTRO_PLATOS_SEMANA,
@@ -382,12 +384,18 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
     with c_wsp:
         if st.button(f"{t('wsp')}", key="btn_send_wsp", width="stretch"):
             registrar_cliente_csv(cliente, "WSP")
+            ok_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "WSP")
+            if not ok_db:
+                registrar_pedido_csv(st.session_state.carrito, cliente, "WSP")
             st.session_state.envio_confirmado = True
             st.session_state._flash_gracias = True
             st.session_state["_redirect_url"] = st.session_state.link
     with c_msg:
         if st.button(f"{t('msg')}", key="btn_send_msg", width="stretch"):
             registrar_cliente_csv(cliente, "MSG")
+            ok_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "MSG")
+            if not ok_db:
+                registrar_pedido_csv(st.session_state.carrito, cliente, "MSG")
             st.session_state.envio_confirmado = True
             st.session_state._flash_gracias = True
             st.session_state["_redirect_url"] = st.session_state.link_sms
