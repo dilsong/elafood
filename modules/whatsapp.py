@@ -30,13 +30,25 @@ def generar_mensaje(carrito, total, cliente):
     return mensaje
 
 
+def _truncar_texto_para_url(texto: str, base_url: str, max_total: int = 7000) -> str:
+    """Evita URLs tan largas que el navegador o WhatsApp las ignore."""
+    t = texto or ""
+    while len(base_url + urllib.parse.quote(t, safe="")) > max_total and len(t) > 80:
+        t = t[:-120].rstrip() + "\n[...]"
+    return t
+
+
 def generar_link_whatsapp(telefono, mensaje):
-    telefono = telefono.replace("+", "").replace(" ", "")
-    mensaje_codificado = urllib.parse.quote(mensaje)
-    return f"https://wa.me/{telefono}?text={mensaje_codificado}"
+    # Solo dígitos en el número (wa.me / api.whatsapp.com).
+    telefono = "".join(c for c in (telefono or "") if c.isdigit())
+    base = f"https://api.whatsapp.com/send?phone={telefono}&text="
+    t = _truncar_texto_para_url(mensaje, base)
+    return base + urllib.parse.quote(t, safe="")
 
 
 def generar_link_sms(telefono, mensaje):
-    telefono_limpio = telefono.replace(" ", "")
-    mensaje_codificado = urllib.parse.quote(mensaje)
-    return f"sms:{telefono_limpio}?body={mensaje_codificado}"
+    # Conserva + para E.164 en iOS/Android cuando exista.
+    telefono_limpio = (telefono or "").replace(" ", "").strip()
+    base = f"sms:{telefono_limpio}?body="
+    t = _truncar_texto_para_url(mensaje, base, max_total=2500)
+    return base + urllib.parse.quote(t, safe="")

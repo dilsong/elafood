@@ -5,7 +5,7 @@ CSV_CLIENTES = "data/clientes_privados.csv"
 
 
 def registrar_cliente_csv(cliente: dict, canal: str) -> None:
-    # Guarda/actualiza cliente por teléfono (clave) con canal WSP/MSG.
+    # Guarda/actualiza cliente por teléfono (clave). Canal: WSP, MSG o PED (pendiente / envío por enlace).
     telefono = (cliente.get("telefono") or "").strip()
     if not telefono:
         return
@@ -13,7 +13,7 @@ def registrar_cliente_csv(cliente: dict, canal: str) -> None:
     nombre = (cliente.get("nombre") or "").strip()
     direccion = (cliente.get("direccion") or "").strip()
     canal = (canal or "").strip().upper()
-    if canal not in {"WSP", "MSG"}:
+    if canal not in {"WSP", "MSG", "PED"}:
         return
 
     os.makedirs(os.path.dirname(CSV_CLIENTES), exist_ok=True)

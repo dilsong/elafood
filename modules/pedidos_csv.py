@@ -16,7 +16,7 @@ def registrar_pedido_csv(carrito: list, cliente: dict, canal: str) -> None:
     if not telefono or not nombre:
         return
     canal = (canal or "").strip().upper()
-    if canal not in {"WSP", "MSG"}:
+    if canal not in {"WSP", "MSG", "PED"}:
         return
 
     os.makedirs(os.path.dirname(CSV_PEDIDOS), exist_ok=True)

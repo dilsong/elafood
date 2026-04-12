@@ -38,7 +38,7 @@ def registrar_pedido_supabase(carrito: list, cliente: dict, canal: str) -> bool:
     if not telefono or not nombre:
         return False
     canal = (canal or "").strip().upper()
-    if canal not in {"WSP", "MSG"}:
+    if canal not in {"WSP", "MSG", "PED"}:
         return False
 
     pedido_id = str(uuid4())
