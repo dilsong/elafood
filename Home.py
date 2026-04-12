@@ -167,7 +167,7 @@ if st.session_state.vista_salida:
         unsafe_allow_html=True,
     )
     st.markdown(
-        f"<h1 style='color:#91241D;text-align:center;'>{t('salir_titulo')}</h1>",
+        f"<h1 style='color:#9D1414;text-align:center;'>{t('salir_titulo')}</h1>",
         unsafe_allow_html=True,
     )
     st.markdown(
@@ -180,13 +180,13 @@ if st.session_state.vista_salida:
     st.markdown(
         f"""
         <div style="text-align:center;margin:8px 0 8px 0;font-size:18px;">
-            <a href="{URL_INSTAGRAM}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">Instagram</a>
+            <a href="{URL_INSTAGRAM}" target="_blank" rel="noopener noreferrer" style="color:#9D1414;font-weight:600;">Instagram</a>
             &nbsp;|&nbsp;
-            <a href="{URL_FACEBOOK}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">Facebook</a>
+            <a href="{URL_FACEBOOK}" target="_blank" rel="noopener noreferrer" style="color:#9D1414;font-weight:600;">Facebook</a>
             &nbsp;|&nbsp;
-            <a href="{URL_WHATSAPP}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">WhatsApp</a>
+            <a href="{URL_WHATSAPP}" target="_blank" rel="noopener noreferrer" style="color:#9D1414;font-weight:600;">WhatsApp</a>
             &nbsp;|&nbsp;
-            <a href="{_src_qr}" target="_blank" rel="noopener noreferrer" style="color:#91241D;font-weight:600;">Compartir QR</a>
+            <a href="{_src_qr}" target="_blank" rel="noopener noreferrer" style="color:#9D1414;font-weight:600;">Compartir QR</a>
         </div>
         """,
         unsafe_allow_html=True,
@@ -298,7 +298,7 @@ with tab1:
         st.info(t("esp_vacio"))
     else:
         st.markdown(
-            "<h2 style='color:#91241D;'>Especial</h2>",
+            "<h2 style='color:#9D1414;'>Especial</h2>",
             unsafe_allow_html=True,
         )
         for col_key in ("comidas", "postres", "otros"):
@@ -334,7 +334,7 @@ with tab2:
                 continue
 
             st.markdown(
-                f"<h2 style='color:#91241D;margin-top:1.2rem;'>{ETIQUETA_DIA[dia]}</h2>",
+                f"<h2 style='color:#9D1414;margin-top:1.2rem;'>{ETIQUETA_DIA[dia]}</h2>",
                 unsafe_allow_html=True,
             )
             for col_key in ("comidas", "postres", "otros"):

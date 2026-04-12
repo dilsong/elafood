@@ -62,7 +62,7 @@ def tarjeta_producto_hoy(nombre, precio, imagen, descripcion, key):
 
     # ------------------ COL 2: Nombre + Descripción ------------------
     with col2:
-        st.markdown(f"<h3 style='color:#91241D;'>{nombre}</h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='color:#9D1414;'>{nombre}</h3>", unsafe_allow_html=True)
         st.write(descripcion)
 
     # ------------------ COL 3: Precio + cantidad + botón + check ------------------
@@ -121,7 +121,7 @@ def tarjeta_acerca_chef():
                 height:150px;
                 border-radius:50%;
                 overflow:hidden;
-                border:3px solid #91241D;
+                border:3px solid #9D1414;
                 flex-shrink:0;
             ">
                 <img src="{src_logo}" alt="ElaFood" style="width:100%;height:100%;object-fit:cover;display:block;" />

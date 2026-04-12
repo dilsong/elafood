@@ -27,7 +27,7 @@ except Exception:
 
 st.markdown(
     """
-    <h1 style='color:#91241D; text-align:center; margin-bottom:10px;'>
+    <h1 style='color:#9D1414; text-align:center; margin-bottom:10px;'>
         """
     + tr("Quienes Somos!", "Who We Are!")
     + """

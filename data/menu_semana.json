@@ -16,14 +16,25 @@
       "otros": []
     },
     "jueves": {
-      "comidas": [],
+      "comidas": [
+        "produ_0031",
+        "produ_0032"
+      ],
       "postres": [],
       "otros": []
     },
     "viernes": {
       "comidas": [],
       "postres": [],
-      "otros": []
+      "otros": [
+        "produ_0014",
+        "produ_0013",
+        "produ_0010",
+        "produ_0011",
+        "produ_0012",
+        "produ_0015",
+        "produ_0016"
+      ]
     },
     "sabado": {
       "comidas": [],
