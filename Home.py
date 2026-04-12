@@ -1,4 +1,6 @@
 import html
+import json
+import re
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -53,9 +55,24 @@ def _html_con_negritas_desde_markdown(texto: str) -> str:
     return "".join(salida).replace("\n", "<br>")
 
 
+def _solo_digitos_telefono(valor: str) -> str:
+    return re.sub(r"\D+", "", valor or "")
+
+
+def _telefono_valido(digitos: str) -> bool:
+    # Acepta 10 dígitos locales o 11–15 con código país (solo dígitos).
+    n = len(digitos)
+    return n == 10 or (11 <= n <= 15)
+
+
+def _telefono_coherente_solo_digitos(raw: str, digitos: str) -> bool:
+    """True si lo escrito es exactamente el número (solo dígitos), sin letras ni símbolos extraídos."""
+    return (raw or "").strip() == digitos
+
+
 TEXTOS = {
     "ES": {
-        "tabs": ["Postres y Especialidades", "Platos de la Semana"],
+        "tabs": ["Postres y\nEspecialidades", "Platos de\nla Semana"],
         "salir_titulo": "¡Gracias por visitar ElaFood!",
         "salir_msg": "Ya puedes cerrar esta pestaña del navegador o volver cuando quieras.",
         "volver": "Volver a la tienda",
@@ -80,7 +97,7 @@ TEXTOS = {
         "semana_vacio": "Aún no hay platos publicados para estos días. El chef puede configurarlos en Quienes Somos! (Lunes a Domingo).",
     },
     "EN": {
-        "tabs": ["Desserts & Specialties", "Weekly Dishes"],
+        "tabs": ["Desserts &\nSpecialties", "Weekly\nDishes"],
         "salir_titulo": "Thanks for visiting ElaFood!",
         "salir_msg": "You can close this browser tab now or come back anytime.",
         "volver": "Back to store",
@@ -347,6 +364,13 @@ if st.session_state.pop("_expand_sidebar_tras_agregar", False):
 # =========================================================
 total = mostrar_carrito()
 cliente = formulario_cliente()
+# Valor tal cual en el campo (puede incluir letras; exigimos que coincida con solo dígitos para generar/enviar).
+raw_tel = (st.session_state.get("_tel_input") or "").strip()
+tel_digits = _solo_digitos_telefono(raw_tel)
+st.session_state.cliente["telefono"] = tel_digits
+cliente["telefono"] = tel_digits
+tel_coherente = _telefono_coherente_solo_digitos(raw_tel, tel_digits)
+telefono_ok = tel_coherente and _telefono_valido(tel_digits)
 
 hay_productos = len(st.session_state.carrito) > 0
 
@@ -357,14 +381,22 @@ else:
 
 if generar:
     nombre_ok = bool((cliente.get("nombre") or "").strip())
-    telefono_ok = bool((cliente.get("telefono") or "").strip())
     if not nombre_ok or not telefono_ok:
         if not nombre_ok and not telefono_ok:
             st.sidebar.warning("Debes ingresar **Nombre** y **Teléfono** para generar el pedido.")
         elif not nombre_ok:
             st.sidebar.warning("Debes ingresar el **Nombre** para generar el pedido.")
-        else:
+        elif not tel_digits:
             st.sidebar.warning("Debes ingresar el **Teléfono** para generar el pedido.")
+        elif not tel_coherente:
+            st.sidebar.warning(
+                "El **Teléfono** debe contener **solo números** (sin letras ni símbolos). "
+                "Ej.: 7875551234 o 17875551234."
+            )
+        else:
+            st.sidebar.warning(
+                "El **Teléfono** debe tener **10 dígitos** (local) o **entre 11 y 15** (con código país)."
+            )
     else:
         # Generar el contenido del pedido para WhatsApp y SMS.
         mensaje = generar_mensaje(st.session_state.carrito, total, cliente)
@@ -383,32 +415,50 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
     c_wsp, c_msg = st.sidebar.columns(2)
     with c_wsp:
         if st.button(f"{t('wsp')}", key="btn_send_wsp", width="stretch"):
-            registrar_cliente_csv(cliente, "WSP")
-            ok_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "WSP")
-            if not ok_db:
-                registrar_pedido_csv(st.session_state.carrito, cliente, "WSP")
-            st.session_state.envio_confirmado = True
-            st.session_state._flash_gracias = True
-            st.session_state["_redirect_url"] = st.session_state.link
+            if not telefono_ok:
+                if not tel_coherente:
+                    st.sidebar.warning(
+                        "El **Teléfono** debe contener **solo números** (sin letras ni símbolos). "
+                        "Ej.: 7875551234 o 17875551234."
+                    )
+                else:
+                    st.sidebar.warning(
+                        "El **Teléfono** debe tener **10 dígitos** (local) o **entre 11 y 15** (con código país)."
+                    )
+            else:
+                registrar_cliente_csv(cliente, "WSP")
+                ok_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "WSP")
+                if not ok_db:
+                    registrar_pedido_csv(st.session_state.carrito, cliente, "WSP")
+                st.session_state.envio_confirmado = True
+                st.session_state._flash_gracias = True
+                st.session_state["_redirect_url"] = st.session_state.link
     with c_msg:
         if st.button(f"{t('msg')}", key="btn_send_msg", width="stretch"):
-            registrar_cliente_csv(cliente, "MSG")
-            ok_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "MSG")
-            if not ok_db:
-                registrar_pedido_csv(st.session_state.carrito, cliente, "MSG")
-            st.session_state.envio_confirmado = True
-            st.session_state._flash_gracias = True
-            st.session_state["_redirect_url"] = st.session_state.link_sms
+            if not telefono_ok:
+                if not tel_coherente:
+                    st.sidebar.warning(
+                        "El **Teléfono** debe contener **solo números** (sin letras ni símbolos). "
+                        "Ej.: 7875551234 o 17875551234."
+                    )
+                else:
+                    st.sidebar.warning(
+                        "El **Teléfono** debe tener **10 dígitos** (local) o **entre 11 y 15** (con código país)."
+                    )
+            else:
+                registrar_cliente_csv(cliente, "MSG")
+                ok_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "MSG")
+                if not ok_db:
+                    registrar_pedido_csv(st.session_state.carrito, cliente, "MSG")
+                st.session_state.envio_confirmado = True
+                st.session_state._flash_gracias = True
+                st.session_state["_redirect_url"] = st.session_state.link_sms
 
 if st.session_state.get("_redirect_url"):
     _go = st.session_state.pop("_redirect_url")
-    st.sidebar.markdown(
-        "<div class='elafood-note'>Abriendo aplicación de mensajería...</div>",
-        unsafe_allow_html=True,
-    )
-    st.sidebar.link_button("Si no abre, toca aquí", _go, width="stretch")
+    # Abre WhatsApp / SMS en la misma vista sin pasos extra (el iframe redirige el parent).
     components.html(
-        f"<script>window.top.location.href='{_go}';</script>",
+        f"<script>window.top.location.href = {json.dumps(_go)};</script>",
         height=0,
         width=0,
     )

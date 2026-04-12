@@ -1,3 +1,5 @@
+import re
+
 import streamlit as st
 from modules.i18n import tr
 
@@ -18,10 +20,20 @@ def formulario_cliente():
         value=st.session_state.cliente["nombre"]
     )
 
-    st.session_state.cliente["telefono"] = st.sidebar.text_input(
+    def _sync_telefono():
+        raw = st.session_state.get("_tel_input", "")
+        st.session_state.cliente["telefono"] = re.sub(r"\D+", "", raw or "")
+
+    if "_tel_input" not in st.session_state:
+        st.session_state["_tel_input"] = st.session_state.cliente.get("telefono", "")
+
+    st.sidebar.text_input(
         tr("Teléfono", "Phone"),
-        value=st.session_state.cliente["telefono"]
+        key="_tel_input",
+        on_change=_sync_telefono,
+        help="Solo números. Ej: 7875551234 o 17875551234 (sin espacios ni guiones).",
     )
+    _sync_telefono()
 
     st.session_state.cliente["direccion"] = st.sidebar.text_area(
         tr("Dirección", "Address"),

@@ -1,3 +1,5 @@
 streamlit run home.py
 
 https://share.streamlit.io
+
+queda pendiente porcesar_imagenes_800.py para recortar las imagenes

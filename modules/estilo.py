@@ -9,6 +9,7 @@ import streamlit.components.v1 as components
 from modules.imagenes import obtener_imagen, src_para_html
 
 from modules.config import (
+    FONT_SCALE,
     RUTA_IMAGEN_PORTADA,
     URL_QR_COMPARTIR,
     URL_FACEBOOK,
@@ -26,6 +27,14 @@ def estilos_app():
     st.markdown(
         """
         <style>
+        /* Tipografía base (ajusta FONT_SCALE en modules/config.py) */
+        html {
+            font-size: calc(16px * __FONT_SCALE__) !important;
+        }
+        .stApp, .stApp p, .stApp li, .stApp label {
+            font-size: 1rem !important;
+        }
+
         /* Contenedor principal */
         .block-container {
             padding-left: max(1rem, env(safe-area-inset-left)) !important;
@@ -94,18 +103,34 @@ def estilos_app():
             display: none !important;
         }
 
-        /* Pestañas principales (más grandes que redes ~18px) */
+        /* Pestañas: dos líneas sin recortar texto (altura automática + fuente algo menor) */
+        div[data-testid="stTabs"] [role="tablist"] {
+            gap: 0.35rem !important;
+        }
         .stTabs [data-baseweb="tab"],
         div[data-testid="stTabs"] button[data-baseweb="tab"] {
-            font-size: 1.6rem !important;
+            font-size: 1.28rem !important;
             font-weight: 600 !important;
-            padding: 0.5rem 0.75rem !important;
+            padding: 0.45rem 0.55rem !important;
+            min-height: 3.1rem !important;
+            height: auto !important;
+            min-width: 0 !important;
+            flex: 1 1 0 !important;
             color: #91241D !important;
+            line-height: 1.22 !important;
+            white-space: pre-line !important;
+            text-align: center !important;
+            overflow: visible !important;
+            align-items: center !important;
         }
         div[data-testid="stTabs"] [data-baseweb="tab"] p,
         div[data-testid="stTabs"] button[data-baseweb="tab"] p {
-            font-size: 1.6rem !important;
+            font-size: 1.28rem !important;
             color: #91241D !important;
+            line-height: 1.22 !important;
+            white-space: pre-line !important;
+            text-align: center !important;
+            overflow: visible !important;
         }
         div[data-testid="stTabs"] button[aria-selected="true"] p {
             color: #91241D !important;
@@ -118,8 +143,8 @@ def estilos_app():
 
         /* Mensajes tipo "info" personalizados (fondo y letras solicitados) */
         .elafood-note {
-            background: #F6E6DF !important;
-            color: #9d1414 !important;
+            background: #E5CDC1 !important;
+            color: #91241D !important;
             border: 1px solid #D8B6A7 !important;
             border-radius: 10px !important;
             padding: 12px 14px !important;
@@ -127,7 +152,7 @@ def estilos_app():
             line-height: 1.45 !important;
         }
         .elafood-note strong {
-            color: #9d1414 !important;
+            color: #91241D !important;
         }
 
         /* Links de envío en sidebar */
@@ -232,7 +257,7 @@ def estilos_app():
             }
         }
         </style>
-        """,
+        """.replace("__FONT_SCALE__", str(FONT_SCALE)),
         unsafe_allow_html=True,
     )
 

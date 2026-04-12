@@ -83,7 +83,13 @@ def tarjeta_producto_hoy(nombre, precio, imagen, descripcion, key):
             width="stretch",
         )
 
-        return cantidad, agregar_btn
+    # Separación entre productos (ancho completo, debajo de la fila).
+    st.markdown(
+        "<hr style='border:none;border-top:1px solid #E0CFC4;margin:14px 0 10px 0;'/>",
+        unsafe_allow_html=True,
+    )
+
+    return cantidad, agregar_btn
     
 
 # Ruta del logo/foto opcional en Panel Chef (usa logo principal para mejor nitidez).

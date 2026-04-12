@@ -1,32 +1,22 @@
 {
   "dias": {
     "lunes": {
-      "comidas": [
-        "produ_001"
-      ],
+      "comidas": [],
       "postres": [],
       "otros": []
     },
     "martes": {
-      "comidas": [
-        "produ_0022"
-      ],
+      "comidas": [],
       "postres": [],
       "otros": []
     },
     "miercoles": {
-      "comidas": [
-        "produ_002"
-      ],
+      "comidas": [],
       "postres": [],
       "otros": []
     },
     "jueves": {
-      "comidas": [
-        "produ_0021",
-        "produ_0031",
-        "produ_0032"
-      ],
+      "comidas": [],
       "postres": [],
       "otros": []
     },
@@ -56,7 +46,12 @@
       "produ_0055",
       "produ_0054",
       "produ_0056",
-      "produ_006"
+      "produ_006",
+      "produ_0062",
+      "produ_0061",
+      "produ_0057",
+      "produ_0090",
+      "produ_0058"
     ],
     "otros": []
   }
