@@ -71,7 +71,10 @@ def _telefono_coherente_solo_digitos(raw: str, digitos: str) -> bool:
 
 
 def _abrir_url_mensajeria(url: str) -> None:
-    """Intenta abrir WhatsApp/SMS (nueva pestaña primero; útil en Streamlit Cloud)."""
+    """
+    Abre wa.me / sms: en el mismo ciclo que el clic del botón (importante en móvil).
+    Usa <a> programático + window.open + fallback a location (iframes de Streamlit).
+    """
     if not url:
         return
     u = json.dumps(url)
@@ -81,6 +84,16 @@ def _abrir_url_mensajeria(url: str) -> None:
 (function () {{
   var u = {u};
   function go() {{
+    try {{
+      var a = document.createElement("a");
+      a.href = u;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }} catch (e0) {{}}
     try {{
       var w = window.open(u, "_blank", "noopener,noreferrer");
       if (w) return;
@@ -100,11 +113,12 @@ def _abrir_url_mensajeria(url: str) -> None:
     try {{ window.location.href = u; }} catch (e4) {{}}
   }}
   go();
-  setTimeout(go, 120);
+  setTimeout(go, 50);
+  setTimeout(go, 200);
 }})();
 </script>
         """,
-        height=16,
+        height=48,
         width=1,
     )
 
@@ -261,11 +275,6 @@ if "_flash_gracias" not in st.session_state:
 
 if "_flash_nuevo_pedido" not in st.session_state:
     st.session_state._flash_nuevo_pedido = False
-
-# Abrir WhatsApp/SMS al inicio del rerun (más fiable que components al final del script).
-_messaging_url = st.session_state.pop("_pending_messaging_url", None)
-if _messaging_url:
-    _abrir_url_mensajeria(_messaging_url)
 
 cabecera_portada()
 
@@ -485,7 +494,8 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
                 registrar_pedido_csv(st.session_state.carrito, cliente, "WSP")
             st.session_state.envio_confirmado = True
             st.session_state._flash_gracias = True
-            st.session_state["_pending_messaging_url"] = st.session_state.link
+            # Mismo ciclo que el clic: el móvil suele bloquear window.open tras st.rerun().
+            _abrir_url_mensajeria(st.session_state.link)
             st.rerun()
     if st.sidebar.button(
         f"{t('msg')} — SMS",
@@ -511,7 +521,7 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
                 registrar_pedido_csv(st.session_state.carrito, cliente, "MSG")
             st.session_state.envio_confirmado = True
             st.session_state._flash_gracias = True
-            st.session_state["_pending_messaging_url"] = st.session_state.link_sms
+            _abrir_url_mensajeria(st.session_state.link_sms)
             st.rerun()
 
 if st.session_state.envio_confirmado:
