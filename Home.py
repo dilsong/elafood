@@ -68,20 +68,39 @@ def _telefono_coherente_solo_digitos(raw: str, digitos: str) -> bool:
     return (raw or "").strip() == digitos
 
 
-def _sidebar_enlace_estilo_elafood(etiqueta: str, url: str) -> None:
-    """Enlace con apariencia de botón ElaFood (#9D1414 / blanco), fiable en Streamlit Cloud."""
-    if not url:
-        return
-    href = html.escape(url, quote=True)
-    lab = html.escape(etiqueta)
-    st.sidebar.markdown(
-        f'<a href="{href}" target="_blank" rel="noopener noreferrer" '
-        'style="display:block;text-align:center;background:#9D1414;color:#fff !important;'
-        'padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:600;'
-        'font-size:15px;line-height:1.2;">'
-        f"{lab}</a>",
-        unsafe_allow_html=True,
+def _sidebar_enlaces_wsp_msg_paralelo(url_wa: str, url_sms: str, etiqueta_wa: str, etiqueta_sms: str) -> None:
+    """WSP y MSG en una fila, estilo ElaFood (#9D1414 / blanco). Un solo bloque HTML evita problemas con columnas."""
+    href_wa = html.escape(url_wa or "", quote=True)
+    href_sms = html.escape(url_sms or "", quote=True)
+    lab_wa = html.escape(etiqueta_wa)
+    lab_sms = html.escape(etiqueta_sms)
+    estilo = (
+        "flex:1 1 0;min-width:0;text-align:center;background:#9D1414;color:#fff !important;"
+        "padding:10px 8px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;"
+        "line-height:1.2;box-sizing:border-box;display:block;"
     )
+    if url_wa and url_sms:
+        st.sidebar.markdown(
+            f'<div style="display:flex;flex-direction:row;gap:8px;width:100%;align-items:stretch;">'
+            f'<a href="{href_wa}" target="_blank" rel="noopener noreferrer" style="{estilo}">{lab_wa}</a>'
+            f'<a href="{href_sms}" target="_blank" rel="noopener noreferrer" style="{estilo}">{lab_sms}</a>'
+            "</div>",
+            unsafe_allow_html=True,
+        )
+    elif url_wa:
+        st.sidebar.markdown(
+            f'<a href="{href_wa}" target="_blank" rel="noopener noreferrer" '
+            f'style="display:block;text-align:center;background:#9D1414;color:#fff !important;'
+            f'padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:600;">{lab_wa}</a>',
+            unsafe_allow_html=True,
+        )
+    elif url_sms:
+        st.sidebar.markdown(
+            f'<a href="{href_sms}" target="_blank" rel="noopener noreferrer" '
+            f'style="display:block;text-align:center;background:#9D1414;color:#fff !important;'
+            f'padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:600;">{lab_sms}</a>',
+            unsafe_allow_html=True,
+        )
 
 
 TEXTOS = {
@@ -474,13 +493,12 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
             st.session_state.envio_desbloqueado = True
             st.rerun()
     else:
-        c_wa, c_sms = st.sidebar.columns(2)
-        with c_wa:
-            if st.session_state.get("link"):
-                _sidebar_enlace_estilo_elafood(t("wsp"), st.session_state.link)
-        with c_sms:
-            if st.session_state.get("link_sms"):
-                _sidebar_enlace_estilo_elafood(t("msg"), st.session_state.link_sms)
+        _sidebar_enlaces_wsp_msg_paralelo(
+            st.session_state.get("link") or "",
+            st.session_state.get("link_sms") or "",
+            t("wsp"),
+            t("msg"),
+        )
         if st.sidebar.button(t("ya_envie"), width="stretch", key="btn_ya_envie"):
             st.session_state.envio_confirmado = True
             st.session_state._flash_gracias = True
