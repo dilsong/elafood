@@ -470,11 +470,11 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
                     "El **Teléfono** debe tener 10 dígitos o entre 11 y 15 con código país."
                 )
         else:
-            registrar_cliente_csv(cliente, "PED")
-            ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "PED")
+            registrar_cliente_csv(cliente, "WSP")
+            ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "WSP")
             if not ok_db:
-                registrar_pedido_csv(st.session_state.carrito, cliente, "PED")
-            notificar_chef_pedido(st.session_state.mensaje_generado, "PED")
+                registrar_pedido_csv(st.session_state.carrito, cliente, "WSP")
+            notificar_chef_pedido(st.session_state.mensaje_generado, "WSP")
             st.session_state.envio_confirmado = True
             st.rerun()
 
