@@ -38,6 +38,6 @@ INTRO_POSTRES_ESPECIALIDADES = (
 
 TEXTO_AYUDA_CARRITO = (
     "Mira en el **Carrito** **»** arriba a la izquierda para abrir el **menú lateral**: "
-    "allí encontrarás tu **Pedido**, agrega tus datos y presiona **Generar pedido**, "
-    "luego **Enviar pedido** y, si quieres, **Abrir WSP** o **Abrir SMS**."
+    "allí verás tu **Pedido**; agrega productos, tus datos, elige **O → WSP** o **O → SMS** "
+    "y pulsa **Finalizar pedido**."
 )

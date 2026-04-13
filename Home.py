@@ -1,7 +1,9 @@
 import html
+import json
 import re
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from modules.carrito import agregar, mostrar_carrito
 from modules.cliente import formulario_cliente
@@ -69,6 +71,56 @@ def _telefono_coherente_solo_digitos(raw: str, digitos: str) -> bool:
     return (raw or "").strip() == digitos
 
 
+def _abrir_url_mensajeria(url: str) -> None:
+    """Abre wa.me / sms: en el mismo ciclo que el clic (mejor en móvil que tras rerun)."""
+    if not url:
+        return
+    u = json.dumps(url)
+    components.html(
+        f"""
+<script>
+(function () {{
+  var u = {u};
+  function go() {{
+    try {{
+      var a = document.createElement("a");
+      a.href = u;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }} catch (e0) {{}}
+    try {{
+      var w = window.open(u, "_blank", "noopener,noreferrer");
+      if (w) return;
+    }} catch (e1) {{}}
+    try {{
+      if (window.top && window.top !== window) {{
+        window.top.location.href = u;
+        return;
+      }}
+    }} catch (e2) {{}}
+    try {{
+      if (window.parent && window.parent !== window) {{
+        window.parent.location.href = u;
+        return;
+      }}
+    }} catch (e3) {{}}
+    try {{ window.location.href = u; }} catch (e4) {{}}
+  }}
+  go();
+  setTimeout(go, 50);
+  setTimeout(go, 200);
+}})();
+</script>
+        """,
+        height=48,
+        width=1,
+    )
+
+
 def _enlace_pedido_markdown(label: str, url: str, *, primario: bool) -> None:
     """
     Enlace tipo botón para wa.me / sms:. Evita st.link_button (en Cloud puede dar TypeError
@@ -101,14 +153,16 @@ TEXTOS = {
         "salir_msg": "Ya puedes cerrar esta pestaña del navegador o volver cuando quieras.",
         "volver": "Volver a la tienda",
         "generar": "Generar pedido",
-        "enviar_pedido": "Enviar pedido",
+        "finalizar_pedido": "Finalizar pedido",
+        "instrucciones_pedido": (
+            "Monta tu pedido, completa tus datos y elige un solo canal de envío abajo."
+        ),
+        "canal_pedido_titulo": "¿Cómo envías el pedido al restaurante?",
+        "opt_wsp": "O → WSP (WhatsApp)",
+        "opt_msg": "O → SMS",
         "confirmar": "Confirmar envío",
         "nuevo": "Hacer nuevo pedido",
         "salir": "🚪 Salir",
-        "pedido_ok": (
-            "Pedido listo. Toca Enviar pedido para guardarlo; luego usa Abrir WSP o Abrir SMS "
-            "para enviar el mensaje al restaurante."
-        ),
         "nombre_req": "Por favor ingresa el nombre del cliente.",
         "nuevo_ok": "Listo. Puedes comenzar un nuevo pedido.",
         "idioma": "Idioma / Language",
@@ -116,8 +170,7 @@ TEXTOS = {
         "msg": "MSG",
         "gracias": "Gracias por preferirnos",
         "envio_siguiente": (
-            "Tu pedido ya está guardado. Para que también llegue por WhatsApp o SMS al restaurante, "
-            "toca el botón y envía el mensaje que se abre."
+            "Si no se abrió la app, toca el botón y envía el mensaje al restaurante."
         ),
         "abrir_wsp": "Abrir WSP",
         "abrir_sms": "Abrir SMS",
@@ -136,13 +189,14 @@ TEXTOS = {
         "salir_msg": "You can close this browser tab now or come back anytime.",
         "volver": "Back to store",
         "generar": "Generate order",
-        "enviar_pedido": "Send order",
+        "finalizar_pedido": "Complete order",
+        "instrucciones_pedido": "Add items, fill in your details, and choose one delivery channel below.",
+        "canal_pedido_titulo": "How will you send the order to the restaurant?",
+        "opt_wsp": "O → WSP (WhatsApp)",
+        "opt_msg": "O → SMS",
         "confirmar": "Confirm send",
         "nuevo": "Start new order",
         "salir": "🚪 Exit",
-        "pedido_ok": (
-            "Order ready. Tap Send order to save it; then use Open WSP or Open SMS to message the restaurant."
-        ),
         "nombre_req": "Please enter customer name.",
         "nuevo_ok": "Done. You can start a new order.",
         "idioma": "Idioma / Language",
@@ -150,7 +204,7 @@ TEXTOS = {
         "msg": "MSG",
         "gracias": "Thank you for choosing us",
         "envio_siguiente": (
-            "Your order is saved. To also send it via WhatsApp or SMS, tap the button and send the message."
+            "If the app did not open, tap the button and send the message to the restaurant."
         ),
         "abrir_wsp": "Open WSP",
         "abrir_sms": "Open SMS",
@@ -249,9 +303,6 @@ if "link" not in st.session_state:
 
 if "link_sms" not in st.session_state:
     st.session_state.link_sms = ""
-
-if "pedido_generado" not in st.session_state:
-    st.session_state.pedido_generado = False
 
 if "envio_confirmado" not in st.session_state:
     st.session_state.envio_confirmado = False
@@ -399,7 +450,7 @@ if st.session_state.pop("_expand_sidebar_tras_agregar", False):
     expandir_sidebar_streamlit()
 
 # =========================================================
-# SIDEBAR (pedido): generar -> WSP o MSG (guarda en datos + abre app) -> gracias / nuevo
+# SIDEBAR (pedido): canal (radio WSP|MSG) + Finalizar -> Supabase + abrir app -> gracias / nuevo
 # =========================================================
 total = mostrar_carrito()
 cliente = formulario_cliente()
@@ -413,68 +464,59 @@ telefono_ok = tel_coherente and _telefono_valido(tel_digits)
 
 hay_productos = len(st.session_state.carrito) > 0
 
-if not st.session_state.pedido_generado:
-    generar = st.sidebar.button(t("generar"), disabled=not hay_productos)
-else:
-    generar = False
-
-if generar:
-    nombre_ok = bool((cliente.get("nombre") or "").strip())
-    if not nombre_ok or not telefono_ok:
-        if not nombre_ok and not telefono_ok:
-            st.sidebar.warning("Debes ingresar **Nombre** y **Teléfono** para generar el pedido.")
-        elif not nombre_ok:
-            st.sidebar.warning("Debes ingresar el **Nombre** para generar el pedido.")
-        elif not tel_digits:
-            st.sidebar.warning("Debes ingresar el **Teléfono** para generar el pedido.")
-        elif not tel_coherente:
-            st.sidebar.warning(
-                "El **Teléfono** debe contener **solo números** (sin letras ni símbolos). "
-                "Ej.: 7875551234 o 17875551234."
-            )
-        else:
-            st.sidebar.warning(
-                "El **Teléfono** debe tener **10 dígitos** (local) o **entre 11 y 15** (con código país)."
-            )
-    else:
-        # Generar el contenido del pedido para WhatsApp y SMS.
-        mensaje = generar_mensaje(st.session_state.carrito, total, cliente)
-        st.session_state.mensaje_generado = mensaje
-        st.session_state.link = generar_link_whatsapp(TELEFONO_ELAFOOD, mensaje)
-        st.session_state.link_sms = generar_link_sms(TELEFONO_ELAFOOD, mensaje)
-
-        st.session_state.pedido_generado = True
-        st.session_state.envio_confirmado = False
-
-if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
+if not st.session_state.envio_confirmado:
     st.sidebar.markdown(
-        f"<div class='elafood-note'>{t('pedido_ok')}</div>",
+        f"<div class='elafood-note'>{html.escape(t('instrucciones_pedido'))}</div>",
         unsafe_allow_html=True,
     )
-    # Un solo paso: guarda pedido y cliente; luego el usuario elige Abrir WSP / Abrir SMS.
+    # Solo una opción a la vez (radio mutuamente excluyente).
+    _canal_elegido = st.sidebar.radio(
+        t("canal_pedido_titulo"),
+        options=["WSP", "MSG"],
+        format_func=lambda c: t("opt_wsp") if c == "WSP" else t("opt_msg"),
+        horizontal=True,
+        key="elafood_canal_pedido",
+    )
     if st.sidebar.button(
-        t("enviar_pedido"),
-        key="btn_enviar_pedido",
+        t("finalizar_pedido"),
+        key="btn_finalizar_pedido",
         type="primary",
         use_container_width=True,
+        disabled=not hay_productos,
     ):
-        if not telefono_ok:
-            if not tel_digits:
-                st.sidebar.warning("Debes ingresar el **Teléfono**.")
-            elif not tel_coherente:
-                st.sidebar.warning(
-                    "El **Teléfono** solo números (sin letras). Ej.: 7875551234 o 17875551234."
-                )
-            else:
-                st.sidebar.warning(
-                    "El **Teléfono** debe tener 10 dígitos o entre 11 y 15 con código país."
-                )
+        nombre_ok = bool((cliente.get("nombre") or "").strip())
+        if not hay_productos:
+            st.sidebar.warning("Agrega al menos **un producto** al carrito.")
+        elif not nombre_ok and not telefono_ok:
+            st.sidebar.warning("Debes ingresar **Nombre** y **Teléfono**.")
+        elif not nombre_ok:
+            st.sidebar.warning("Debes ingresar el **Nombre**.")
+        elif not tel_digits:
+            st.sidebar.warning("Debes ingresar el **Teléfono**.")
+        elif not tel_coherente:
+            st.sidebar.warning(
+                "El **Teléfono** solo números (sin letras). Ej.: 7875551234 o 17875551234."
+            )
+        elif not telefono_ok:
+            st.sidebar.warning(
+                "El **Teléfono** debe tener 10 dígitos o entre 11 y 15 con código país."
+            )
         else:
-            registrar_cliente_csv(cliente, "WSP")
-            ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "WSP")
+            mensaje = generar_mensaje(st.session_state.carrito, total, cliente)
+            st.session_state.mensaje_generado = mensaje
+            st.session_state.link = generar_link_whatsapp(TELEFONO_ELAFOOD, mensaje)
+            st.session_state.link_sms = generar_link_sms(TELEFONO_ELAFOOD, mensaje)
+            canal = (_canal_elegido or "WSP").strip().upper()
+            if canal not in {"WSP", "MSG"}:
+                canal = "WSP"
+            registrar_cliente_csv(cliente, canal)
+            ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, canal)
             if not ok_db:
-                registrar_pedido_csv(st.session_state.carrito, cliente, "WSP")
-            notificar_chef_pedido(st.session_state.mensaje_generado, "WSP")
+                registrar_pedido_csv(st.session_state.carrito, cliente, canal)
+            notificar_chef_pedido(st.session_state.mensaje_generado, canal)
+            st.session_state["_canal_final"] = canal
+            _url_abrir = st.session_state.link if canal == "WSP" else st.session_state.link_sms
+            _abrir_url_mensajeria(_url_abrir)
             st.session_state.envio_confirmado = True
             st.rerun()
 
@@ -483,25 +525,25 @@ if st.session_state.envio_confirmado:
         f"<div class='elafood-note'>{t('gracias')}</div>",
         unsafe_allow_html=True,
     )
+    _canal_f = (st.session_state.get("_canal_final") or "WSP").strip().upper()
     _sw = (st.session_state.get("link") or "").strip()
     _ss = (st.session_state.get("link_sms") or "").strip()
-    if _sw or _ss:
+    _url_fb = _sw if _canal_f == "WSP" else _ss
+    if _url_fb:
         st.sidebar.caption(t("envio_siguiente"))
-        _s1, _s2 = st.sidebar.columns(2)
-        with _s1:
-            if _sw:
-                _enlace_pedido_markdown(t("abrir_wsp"), _sw, primario=True)
-        with _s2:
-            if _ss:
-                _enlace_pedido_markdown(t("abrir_sms"), _ss, primario=False)
+        _enlace_pedido_markdown(
+            t("abrir_wsp") if _canal_f == "WSP" else t("abrir_sms"),
+            _url_fb,
+            primario=(_canal_f == "WSP"),
+        )
     if st.sidebar.button(t("nuevo")):
-        # Reinicia el flujo completo de pedido (mantiene datos del cliente).
         st.session_state.carrito = []
         st.session_state.mensaje_generado = ""
         st.session_state.link = ""
         st.session_state.link_sms = ""
-        st.session_state.pedido_generado = False
         st.session_state.envio_confirmado = False
+        st.session_state.pop("_canal_final", None)
+        st.session_state.elafood_canal_pedido = "WSP"
         st.session_state._flash_nuevo_pedido = True
         st.rerun()
 
