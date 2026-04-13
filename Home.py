@@ -172,7 +172,7 @@ TEXTOS = {
             "Tu pedido ya está guardado. Para que también llegue por WhatsApp o SMS al restaurante, "
             "toca el botón y envía el mensaje que se abre."
         ),
-        "abrir_wsp": "Abrir WhatsApp",
+        "abrir_wsp": "Abrir WSP",
         "abrir_sms": "Abrir SMS",
         "onb_title": "Instala ElaFood en tu teléfono",
         "onb_body": "Para acceso rápido, usa 'Añadir a pantalla de inicio' da click a los ... abajo a la derecha.",
@@ -204,7 +204,7 @@ TEXTOS = {
         "envio_siguiente": (
             "Your order is saved. To also send it via WhatsApp or SMS, tap the button and send the message."
         ),
-        "abrir_wsp": "Open WhatsApp",
+        "abrir_wsp": "Open WSP",
         "abrir_sms": "Open SMS",
         "onb_title": "Install ElaFood on your phone",
         "onb_body": "For quick access, use 'Add to Home screen' from your browser menu.",
@@ -307,9 +307,6 @@ if "pedido_generado" not in st.session_state:
 
 if "envio_confirmado" not in st.session_state:
     st.session_state.envio_confirmado = False
-if "_flash_gracias" not in st.session_state:
-    st.session_state._flash_gracias = False
-
 if "_flash_nuevo_pedido" not in st.session_state:
     st.session_state._flash_nuevo_pedido = False
 
@@ -346,22 +343,6 @@ if _src_qr_param == "qr" and not st.session_state.get("_onb_seen"):
         unsafe_allow_html=True,
     )
     st.session_state["_onb_seen"] = True
-
-# Tras confirmar canal: enlaces reales (no iframe) — en móvil abren WhatsApp/SMS de forma fiable.
-if st.session_state.envio_confirmado:
-    _url_w = (st.session_state.get("link") or "").strip()
-    _url_s = (st.session_state.get("link_sms") or "").strip()
-    if _url_w or _url_s:
-        st.success(t("gracias"))
-        st.caption(t("envio_siguiente"))
-        _c_w, _c_s = st.columns(2)
-        with _c_w:
-            if _url_w:
-                _enlace_pedido_markdown(t("abrir_wsp"), _url_w, primario=True)
-        with _c_s:
-            if _url_s:
-                _enlace_pedido_markdown(t("abrir_sms"), _url_s, primario=False)
-        st.markdown("---")
 
 tab1, tab2 = st.tabs(t("tabs"))
 
@@ -547,7 +528,6 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
                 registrar_pedido_csv(st.session_state.carrito, cliente, "WSP")
             notificar_chef_pedido(st.session_state.mensaje_generado, "WSP")
             st.session_state.envio_confirmado = True
-            st.session_state._flash_gracias = True
             # Mismo ciclo que el clic: el móvil suele bloquear window.open tras st.rerun().
             _abrir_url_mensajeria(st.session_state.link)
             st.rerun()
@@ -575,16 +555,14 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
                 registrar_pedido_csv(st.session_state.carrito, cliente, "MSG")
             notificar_chef_pedido(st.session_state.mensaje_generado, "MSG")
             st.session_state.envio_confirmado = True
-            st.session_state._flash_gracias = True
             _abrir_url_mensajeria(st.session_state.link_sms)
             st.rerun()
 
 if st.session_state.envio_confirmado:
-    if st.session_state.pop("_flash_gracias", False):
-        st.sidebar.markdown(
-            f"<div class='elafood-note'>{t('gracias')}</div>",
-            unsafe_allow_html=True,
-        )
+    st.sidebar.markdown(
+        f"<div class='elafood-note'>{t('gracias')}</div>",
+        unsafe_allow_html=True,
+    )
     _sw = (st.session_state.get("link") or "").strip()
     _ss = (st.session_state.get("link_sms") or "").strip()
     if _sw or _ss:
