@@ -71,6 +71,31 @@ def _telefono_coherente_solo_digitos(raw: str, digitos: str) -> bool:
     return (raw or "").strip() == digitos
 
 
+def _enlace_pedido_markdown(label: str, url: str, *, primario: bool) -> None:
+    """
+    Enlace tipo botón para wa.me / sms:. Evita st.link_button (en Cloud puede dar TypeError
+    con sms: o con kwargs según versión).
+    """
+    url = str(url or "").strip()
+    if not url:
+        return
+    safe_url = html.escape(url, quote=True)
+    safe_label = html.escape(label, quote=True)
+    es_sms = url.lower().startswith("sms:")
+    extra = "" if es_sms else ' target="_blank" rel="noopener noreferrer"'
+    if primario:
+        bg, fg = "#25D366", "#ffffff"
+    else:
+        bg, fg = "#5c636a", "#ffffff"
+    st.markdown(
+        f'<a href="{safe_url}"{extra} '
+        f'style="display:block;text-align:center;padding:12px 14px;margin:2px 0;'
+        f"background:{bg};color:{fg};border-radius:8px;text-decoration:none;"
+        f'font-weight:600;">{safe_label}</a>',
+        unsafe_allow_html=True,
+    )
+
+
 def _abrir_url_mensajeria(url: str) -> None:
     """
     Abre wa.me / sms: en el mismo ciclo que el clic del botón (importante en móvil).
@@ -332,21 +357,10 @@ if st.session_state.envio_confirmado:
         _c_w, _c_s = st.columns(2)
         with _c_w:
             if _url_w:
-                st.link_button(
-                    t("abrir_wsp"),
-                    _url_w,
-                    use_container_width=True,
-                    type="primary",
-                    key="hero_open_wsp",
-                )
+                _enlace_pedido_markdown(t("abrir_wsp"), _url_w, primario=True)
         with _c_s:
             if _url_s:
-                st.link_button(
-                    t("abrir_sms"),
-                    _url_s,
-                    use_container_width=True,
-                    key="hero_open_sms",
-                )
+                _enlace_pedido_markdown(t("abrir_sms"), _url_s, primario=False)
         st.markdown("---")
 
 tab1, tab2 = st.tabs(t("tabs"))
@@ -578,10 +592,10 @@ if st.session_state.envio_confirmado:
         _s1, _s2 = st.sidebar.columns(2)
         with _s1:
             if _sw:
-                st.link_button(t("abrir_wsp"), _sw, use_container_width=True, key="side_open_wsp")
+                _enlace_pedido_markdown(t("abrir_wsp"), _sw, primario=True)
         with _s2:
             if _ss:
-                st.link_button(t("abrir_sms"), _ss, use_container_width=True, key="side_open_sms")
+                _enlace_pedido_markdown(t("abrir_sms"), _ss, primario=False)
     if st.sidebar.button(t("nuevo")):
         # Reinicia el flujo completo de pedido (mantiene datos del cliente).
         st.session_state.carrito = []
