@@ -69,10 +69,16 @@ def _telefono_coherente_solo_digitos(raw: str, digitos: str) -> bool:
     return (raw or "").strip() == digitos
 
 
-def _enlace_pedido_markdown(label: str, url: str, *, primario: bool) -> None:
+def _enlace_pedido_markdown(
+    label: str,
+    url: str,
+    *,
+    primario: bool,
+    en_sidebar: bool = False,
+) -> None:
     """
     Enlace tipo botón para wa.me / sms:. Evita st.link_button (en Cloud puede dar TypeError
-    con sms: o con kwargs según versión).
+    con sms: o con kwargs según versión). Use en_sidebar=True para el flujo post-Finalizar.
     """
     url = str(url or "").strip()
     if not url:
@@ -85,13 +91,16 @@ def _enlace_pedido_markdown(label: str, url: str, *, primario: bool) -> None:
         bg, fg = "#25D366", "#ffffff"
     else:
         bg, fg = "#5c636a", "#ffffff"
-    st.markdown(
+    _md = (
         f'<a href="{safe_url}"{extra} '
-        f'style="display:block;text-align:center;padding:12px 14px;margin:2px 0;'
+        f'style="display:block;text-align:center;padding:12px 14px;margin:10px 0 14px 0;'
         f"background:{bg};color:{fg};border-radius:8px;text-decoration:none;"
-        f'font-weight:600;">{safe_label}</a>',
-        unsafe_allow_html=True,
+        f'font-weight:600;">{safe_label}</a>'
     )
+    if en_sidebar:
+        st.sidebar.markdown(_md, unsafe_allow_html=True)
+    else:
+        st.markdown(_md, unsafe_allow_html=True)
 
 
 TEXTOS = {
@@ -483,6 +492,7 @@ if st.session_state.envio_confirmado:
             _lbl,
             _url_fb,
             primario=(_canal_f == "WSP"),
+            en_sidebar=True,
         )
     else:
         st.sidebar.warning("No se pudo generar el enlace. Vuelve con **Hacer nuevo pedido** e inténtalo de nuevo.")
