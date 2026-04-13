@@ -26,6 +26,7 @@ from modules.pedidos_csv import registrar_pedido_csv
 from modules.estilo import cabecera_portada, estilos_app, expandir_sidebar_streamlit
 from modules.menu_semana import DIAS_ORDEN, ETIQUETA_DIA, cargar_menu_semana
 from modules.productos import PRODUCTOS
+from modules.chef_notify import notificar_chef_pedido
 from modules.supabase_store import registrar_pedido_supabase
 from modules.tarjetas import tarjeta_producto_hoy
 from modules.whatsapp import generar_link_sms, generar_link_whatsapp, generar_mensaje
@@ -142,6 +143,12 @@ TEXTOS = {
         "wsp": "WSP",
         "msg": "MSG",
         "gracias": "Gracias por preferirnos",
+        "envio_siguiente": (
+            "Tu pedido ya está guardado. Para que también llegue por WhatsApp o SMS al restaurante, "
+            "toca el botón y envía el mensaje que se abre."
+        ),
+        "abrir_wsp": "Abrir WhatsApp",
+        "abrir_sms": "Abrir SMS",
         "onb_title": "Instala ElaFood en tu teléfono",
         "onb_body": "Para acceso rápido, usa 'Añadir a pantalla de inicio' da click a los ... abajo a la derecha.",
         "onb_ios": "iPhone (Safari): Compartir → Ver mas -> Agregar a Inicio. -> Reemplaza Streamlit por ElaFood",
@@ -169,6 +176,11 @@ TEXTOS = {
         "wsp": "WSP",
         "msg": "MSG",
         "gracias": "Thank you for choosing us",
+        "envio_siguiente": (
+            "Your order is saved. To also send it via WhatsApp or SMS, tap the button and send the message."
+        ),
+        "abrir_wsp": "Open WhatsApp",
+        "abrir_sms": "Open SMS",
         "onb_title": "Install ElaFood on your phone",
         "onb_body": "For quick access, use 'Add to Home screen' from your browser menu.",
         "onb_ios": "iPhone (Safari): Share → Add to Home Screen.",
@@ -309,6 +321,33 @@ if _src_qr_param == "qr" and not st.session_state.get("_onb_seen"):
         unsafe_allow_html=True,
     )
     st.session_state["_onb_seen"] = True
+
+# Tras confirmar canal: enlaces reales (no iframe) — en móvil abren WhatsApp/SMS de forma fiable.
+if st.session_state.envio_confirmado:
+    _url_w = (st.session_state.get("link") or "").strip()
+    _url_s = (st.session_state.get("link_sms") or "").strip()
+    if _url_w or _url_s:
+        st.success(t("gracias"))
+        st.caption(t("envio_siguiente"))
+        _c_w, _c_s = st.columns(2)
+        with _c_w:
+            if _url_w:
+                st.link_button(
+                    t("abrir_wsp"),
+                    _url_w,
+                    use_container_width=True,
+                    type="primary",
+                    key="hero_open_wsp",
+                )
+        with _c_s:
+            if _url_s:
+                st.link_button(
+                    t("abrir_sms"),
+                    _url_s,
+                    use_container_width=True,
+                    key="hero_open_sms",
+                )
+        st.markdown("---")
 
 tab1, tab2 = st.tabs(t("tabs"))
 
@@ -492,6 +531,7 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
             ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "WSP")
             if not ok_db:
                 registrar_pedido_csv(st.session_state.carrito, cliente, "WSP")
+            notificar_chef_pedido(st.session_state.mensaje_generado, "WSP")
             st.session_state.envio_confirmado = True
             st.session_state._flash_gracias = True
             # Mismo ciclo que el clic: el móvil suele bloquear window.open tras st.rerun().
@@ -519,6 +559,7 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
             ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "MSG")
             if not ok_db:
                 registrar_pedido_csv(st.session_state.carrito, cliente, "MSG")
+            notificar_chef_pedido(st.session_state.mensaje_generado, "MSG")
             st.session_state.envio_confirmado = True
             st.session_state._flash_gracias = True
             _abrir_url_mensajeria(st.session_state.link_sms)
@@ -530,6 +571,17 @@ if st.session_state.envio_confirmado:
             f"<div class='elafood-note'>{t('gracias')}</div>",
             unsafe_allow_html=True,
         )
+    _sw = (st.session_state.get("link") or "").strip()
+    _ss = (st.session_state.get("link_sms") or "").strip()
+    if _sw or _ss:
+        st.sidebar.caption(t("envio_siguiente"))
+        _s1, _s2 = st.sidebar.columns(2)
+        with _s1:
+            if _sw:
+                st.link_button(t("abrir_wsp"), _sw, use_container_width=True, key="side_open_wsp")
+        with _s2:
+            if _ss:
+                st.link_button(t("abrir_sms"), _ss, use_container_width=True, key="side_open_sms")
     if st.sidebar.button(t("nuevo")):
         # Reinicia el flujo completo de pedido (mantiene datos del cliente).
         st.session_state.carrito = []

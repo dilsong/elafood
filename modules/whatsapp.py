@@ -39,9 +39,9 @@ def _truncar_texto_para_url(texto: str, base_url: str, max_total: int = 7000) ->
 
 
 def generar_link_whatsapp(telefono, mensaje):
-    # Solo dígitos en el número (wa.me / api.whatsapp.com).
+    # Solo dígitos; wa.me suele abrir mejor la app en móviles que api.whatsapp.com.
     telefono = "".join(c for c in (telefono or "") if c.isdigit())
-    base = f"https://api.whatsapp.com/send?phone={telefono}&text="
+    base = f"https://wa.me/{telefono}?text="
     t = _truncar_texto_para_url(mensaje, base)
     return base + urllib.parse.quote(t, safe="")
 
