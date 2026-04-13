@@ -41,7 +41,16 @@ def _clave_cantidad_carrito(nombre_producto: str, dia) -> str:
 
 def _sync_cantidad_linea(nombre_producto: str, dia, state_key: str):
     def _fn():
-        val = int(st.session_state[state_key])
+        val = int(st.session_state.get(state_key, 0))
+        if val <= 0:
+            st.session_state.carrito = [
+                it
+                for it in st.session_state.carrito
+                if not (it["producto"] == nombre_producto and it.get("dia") == dia)
+            ]
+            st.session_state.pop(state_key, None)
+            st.rerun()
+            return
         for it in st.session_state.carrito:
             if it["producto"] == nombre_producto and it.get("dia") == dia:
                 it["cantidad"] = val
@@ -84,7 +93,7 @@ def mostrar_carrito():
 
         st.sidebar.number_input(
             tr("Uds.", "Qty."),
-            min_value=1,
+            min_value=0,
             max_value=99,
             key=sk,
             on_change=_sync_cantidad_linea(producto, dia, sk),

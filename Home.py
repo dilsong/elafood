@@ -111,12 +111,13 @@ TEXTOS = {
         "volver": "Volver a la tienda",
         "generar": "Generar pedido",
         "finalizar_pedido": "Finalizar pedido",
+        "guardando_pedido": "Guardando tu pedido…",
         "instrucciones_pedido": (
-            "Monta tu pedido, completa tus datos y elige un solo canal de envío abajo."
+            "Gracias por Preferirnos."
         ),
-        "canal_pedido_titulo": "¿Cómo envías el pedido al restaurante?",
-        "opt_wsp": "→ WSP",
-        "opt_msg": "→ SMS",
+        "canal_pedido_titulo": "Escoge una opción para enviar tu solicitud del pedido!",
+        "opt_wsp": "→ WSP (WhatsApp)",
+        "opt_msg": "→ SMS (Texto)",
         "confirmar": "Confirmar envío",
         "nuevo": "Hacer nuevo pedido",
         "salir": "🚪 Salir",
@@ -148,10 +149,11 @@ TEXTOS = {
         "volver": "Back to store",
         "generar": "Generate order",
         "finalizar_pedido": "Complete order",
+        "guardando_pedido": "Saving your order…",
         "instrucciones_pedido": "Add items, fill in your details, and choose one delivery channel below.",
         "canal_pedido_titulo": "How will you send the order to the restaurant?",
-        "opt_wsp": "O → WSP (WhatsApp)",
-        "opt_msg": "O → SMS",
+        "opt_wsp": "→ WSP (WhatsApp)",
+        "opt_msg": "→ SMS",
         "confirmar": "Confirm send",
         "nuevo": "Start new order",
         "salir": "🚪 Exit",
@@ -460,20 +462,22 @@ if not st.session_state.envio_confirmado:
                 "El **Teléfono** debe tener 10 dígitos o entre 11 y 15 con código país."
             )
         else:
-            mensaje = generar_mensaje(st.session_state.carrito, total, cliente)
-            st.session_state.mensaje_generado = mensaje
-            st.session_state.link = generar_link_whatsapp(TELEFONO_ELAFOOD, mensaje)
-            st.session_state.link_sms = generar_link_sms(TELEFONO_ELAFOOD, mensaje)
-            canal = (_canal_elegido or "WSP").strip().upper()
-            if canal not in {"WSP", "MSG"}:
-                canal = "WSP"
-            registrar_cliente_csv(cliente, canal)
-            ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, canal)
-            if not ok_db:
-                registrar_pedido_csv(st.session_state.carrito, cliente, canal)
-            notificar_chef_pedido(st.session_state.mensaje_generado, canal)
-            st.session_state["_canal_final"] = canal
-            st.session_state.envio_confirmado = True
+            # Spinner nativo de Streamlit (texto + círculo); no interfiere con Supabase/CSV/notificación.
+            with st.spinner(t("guardando_pedido")):
+                mensaje = generar_mensaje(st.session_state.carrito, total, cliente)
+                st.session_state.mensaje_generado = mensaje
+                st.session_state.link = generar_link_whatsapp(TELEFONO_ELAFOOD, mensaje)
+                st.session_state.link_sms = generar_link_sms(TELEFONO_ELAFOOD, mensaje)
+                canal = (_canal_elegido or "WSP").strip().upper()
+                if canal not in {"WSP", "MSG"}:
+                    canal = "WSP"
+                registrar_cliente_csv(cliente, canal)
+                ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, canal)
+                if not ok_db:
+                    registrar_pedido_csv(st.session_state.carrito, cliente, canal)
+                notificar_chef_pedido(st.session_state.mensaje_generado, canal)
+                st.session_state["_canal_final"] = canal
+                st.session_state.envio_confirmado = True
             st.rerun()
 
 if st.session_state.envio_confirmado:
@@ -496,7 +500,11 @@ if st.session_state.envio_confirmado:
         )
     else:
         st.sidebar.warning("No se pudo generar el enlace. Vuelve con **Hacer nuevo pedido** e inténtalo de nuevo.")
-    if st.sidebar.button(t("nuevo")):
+    if st.sidebar.button(
+        t("nuevo"),
+        key="elafood_btn_nuevo_pedido",
+        use_container_width=True,
+    ):
         st.session_state.carrito = []
         st.session_state.mensaje_generado = ""
         st.session_state.link = ""

@@ -69,10 +69,19 @@ def estilos_app():
             background-color: #9D1414 !important;
             color: #ffffff !important;
         }
-        /* Sidebar: botones (Generar pedido, Salir, Vaciar…) — compactos, sin forzar alturas grandes */
+        /* Sidebar: botones a ancho completo y texto centrado (p. ej. Hacer nuevo pedido, Finalizar…) */
+        section[data-testid="stSidebar"] [data-testid="stButton"] {
+            width: 100% !important;
+        }
         section[data-testid="stSidebar"] [data-testid="stButton"] button,
         section[data-testid="stSidebar"] button[kind="secondary"],
         section[data-testid="stSidebar"] button[kind="primary"] {
+            width: 100% !important;
+            max-width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
             background-color: #9D1414 !important;
             color: #ffffff !important;
             border: none !important;
