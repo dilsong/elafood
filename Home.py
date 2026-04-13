@@ -1,9 +1,7 @@
 import html
-import json
 import re
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 from modules.carrito import agregar, mostrar_carrito
 from modules.cliente import formulario_cliente
@@ -96,59 +94,6 @@ def _enlace_pedido_markdown(label: str, url: str, *, primario: bool) -> None:
     )
 
 
-def _abrir_url_mensajeria(url: str) -> None:
-    """
-    Abre wa.me / sms: en el mismo ciclo que el clic del botón (importante en móvil).
-    Usa <a> programático + window.open + fallback a location (iframes de Streamlit).
-    """
-    if not url:
-        return
-    u = json.dumps(url)
-    components.html(
-        f"""
-<script>
-(function () {{
-  var u = {u};
-  function go() {{
-    try {{
-      var a = document.createElement("a");
-      a.href = u;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }} catch (e0) {{}}
-    try {{
-      var w = window.open(u, "_blank", "noopener,noreferrer");
-      if (w) return;
-    }} catch (e1) {{}}
-    try {{
-      if (window.top && window.top !== window) {{
-        window.top.location.href = u;
-        return;
-      }}
-    }} catch (e2) {{}}
-    try {{
-      if (window.parent && window.parent !== window) {{
-        window.parent.location.href = u;
-        return;
-      }}
-    }} catch (e3) {{}}
-    try {{ window.location.href = u; }} catch (e4) {{}}
-  }}
-  go();
-  setTimeout(go, 50);
-  setTimeout(go, 200);
-}})();
-</script>
-        """,
-        height=48,
-        width=1,
-    )
-
-
 TEXTOS = {
     "ES": {
         "tabs": ["Postres y\nEspecialidades", "Platos de\nla Semana"],
@@ -156,11 +101,13 @@ TEXTOS = {
         "salir_msg": "Ya puedes cerrar esta pestaña del navegador o volver cuando quieras.",
         "volver": "Volver a la tienda",
         "generar": "Generar pedido",
+        "enviar_pedido": "Enviar pedido",
         "confirmar": "Confirmar envío",
         "nuevo": "Hacer nuevo pedido",
         "salir": "🚪 Salir",
         "pedido_ok": (
-            "Pedido listo. Elige WhatsApp o mensaje de texto; se guarda el pedido y se abre la app."
+            "Pedido listo. Toca Enviar pedido para guardarlo; luego usa Abrir WSP o Abrir SMS "
+            "para enviar el mensaje al restaurante."
         ),
         "nombre_req": "Por favor ingresa el nombre del cliente.",
         "nuevo_ok": "Listo. Puedes comenzar un nuevo pedido.",
@@ -189,11 +136,12 @@ TEXTOS = {
         "salir_msg": "You can close this browser tab now or come back anytime.",
         "volver": "Back to store",
         "generar": "Generate order",
+        "enviar_pedido": "Send order",
         "confirmar": "Confirm send",
         "nuevo": "Start new order",
         "salir": "🚪 Exit",
         "pedido_ok": (
-            "Order ready. Choose WhatsApp or text message; the order is saved and the app opens."
+            "Order ready. Tap Send order to save it; then use Open WSP or Open SMS to message the restaurant."
         ),
         "nombre_req": "Please enter customer name.",
         "nuevo_ok": "Done. You can start a new order.",
@@ -503,10 +451,10 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
         f"<div class='elafood-note'>{t('pedido_ok')}</div>",
         unsafe_allow_html=True,
     )
-    # Botones directos del sidebar (ancho completo): en móvil/Cloud enganchan mejor que columnas.
+    # Un solo paso: guarda pedido y cliente; luego el usuario elige Abrir WSP / Abrir SMS.
     if st.sidebar.button(
-        f"{t('wsp')} — WhatsApp",
-        key="btn_send_wsp",
+        t("enviar_pedido"),
+        key="btn_enviar_pedido",
         type="primary",
         use_container_width=True,
     ):
@@ -522,40 +470,12 @@ if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
                     "El **Teléfono** debe tener 10 dígitos o entre 11 y 15 con código país."
                 )
         else:
-            registrar_cliente_csv(cliente, "WSP")
-            ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "WSP")
+            registrar_cliente_csv(cliente, "PED")
+            ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "PED")
             if not ok_db:
-                registrar_pedido_csv(st.session_state.carrito, cliente, "WSP")
-            notificar_chef_pedido(st.session_state.mensaje_generado, "WSP")
+                registrar_pedido_csv(st.session_state.carrito, cliente, "PED")
+            notificar_chef_pedido(st.session_state.mensaje_generado, "PED")
             st.session_state.envio_confirmado = True
-            # Mismo ciclo que el clic: el móvil suele bloquear window.open tras st.rerun().
-            _abrir_url_mensajeria(st.session_state.link)
-            st.rerun()
-    if st.sidebar.button(
-        f"{t('msg')} — SMS",
-        key="btn_send_msg",
-        type="primary",
-        use_container_width=True,
-    ):
-        if not telefono_ok:
-            if not tel_digits:
-                st.sidebar.warning("Debes ingresar el **Teléfono**.")
-            elif not tel_coherente:
-                st.sidebar.warning(
-                    "El **Teléfono** solo números (sin letras). Ej.: 7875551234 o 17875551234."
-                )
-            else:
-                st.sidebar.warning(
-                    "El **Teléfono** debe tener 10 dígitos o entre 11 y 15 con código país."
-                )
-        else:
-            registrar_cliente_csv(cliente, "MSG")
-            ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "MSG")
-            if not ok_db:
-                registrar_pedido_csv(st.session_state.carrito, cliente, "MSG")
-            notificar_chef_pedido(st.session_state.mensaje_generado, "MSG")
-            st.session_state.envio_confirmado = True
-            _abrir_url_mensajeria(st.session_state.link_sms)
             st.rerun()
 
 if st.session_state.envio_confirmado:
