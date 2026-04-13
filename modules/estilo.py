@@ -81,6 +81,37 @@ def estilos_app():
             font-size: 15px !important;
         }
 
+        /* Enlaces WSP/MSG (markdown en sidebar): mismo look que botones ElaFood; móvil/Safari suelen forzar color de <a> */
+        section[data-testid="stSidebar"] a.elafood-channel-btn,
+        section[data-testid="stSidebar"] a.elafood-channel-btn:link,
+        section[data-testid="stSidebar"] a.elafood-channel-btn:visited,
+        section[data-testid="stSidebar"] a.elafood-channel-btn:hover,
+        section[data-testid="stSidebar"] a.elafood-channel-btn:active {
+            background-color: #9D1414 !important;
+            background: #9D1414 !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            border: none !important;
+            text-decoration: none !important;
+            font-weight: 600 !important;
+        }
+        section[data-testid="stSidebar"] a.elafood-channel-btn:hover {
+            background-color: #761d17 !important;
+            background: #761d17 !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+        section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p a.elafood-channel-btn,
+        section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] a.elafood-channel-btn {
+            background-color: #9D1414 !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+        /* Aire entre fila WSP/MSG (markdown) y el botón «Ya envié» de Streamlit */
+        section[data-testid="stSidebar"] .elafood-channel-row {
+            margin-bottom: 1.15rem !important;
+        }
+
         /* Carrito: number_input delgado; no inflar el sidebar */
         section[data-testid="stSidebar"] [data-testid="stNumberInput"] {
             margin-top: 0 !important;

@@ -1,7 +1,9 @@
 import html
+import json
 import re
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from modules.carrito import agregar, mostrar_carrito
 from modules.cliente import formulario_cliente
@@ -68,39 +70,43 @@ def _telefono_coherente_solo_digitos(raw: str, digitos: str) -> bool:
     return (raw or "").strip() == digitos
 
 
-def _sidebar_enlaces_wsp_msg_paralelo(url_wa: str, url_sms: str, etiqueta_wa: str, etiqueta_sms: str) -> None:
-    """WSP y MSG en una fila, estilo ElaFood (#9D1414 / blanco). Un solo bloque HTML evita problemas con columnas."""
-    href_wa = html.escape(url_wa or "", quote=True)
-    href_sms = html.escape(url_sms or "", quote=True)
-    lab_wa = html.escape(etiqueta_wa)
-    lab_sms = html.escape(etiqueta_sms)
-    estilo = (
-        "flex:1 1 0;min-width:0;text-align:center;background:#9D1414;color:#fff !important;"
-        "padding:10px 8px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;"
-        "line-height:1.2;box-sizing:border-box;display:block;"
+def _abrir_url_mensajeria(url: str) -> None:
+    """Intenta abrir WhatsApp/SMS (nueva pestaña primero; útil en Streamlit Cloud)."""
+    if not url:
+        return
+    u = json.dumps(url)
+    components.html(
+        f"""
+<script>
+(function () {{
+  var u = {u};
+  function go() {{
+    try {{
+      var w = window.open(u, "_blank", "noopener,noreferrer");
+      if (w) return;
+    }} catch (e1) {{}}
+    try {{
+      if (window.top && window.top !== window) {{
+        window.top.location.href = u;
+        return;
+      }}
+    }} catch (e2) {{}}
+    try {{
+      if (window.parent && window.parent !== window) {{
+        window.parent.location.href = u;
+        return;
+      }}
+    }} catch (e3) {{}}
+    try {{ window.location.href = u; }} catch (e4) {{}}
+  }}
+  go();
+  setTimeout(go, 120);
+}})();
+</script>
+        """,
+        height=16,
+        width=1,
     )
-    if url_wa and url_sms:
-        st.sidebar.markdown(
-            f'<div style="display:flex;flex-direction:row;gap:8px;width:100%;align-items:stretch;">'
-            f'<a href="{href_wa}" target="_blank" rel="noopener noreferrer" style="{estilo}">{lab_wa}</a>'
-            f'<a href="{href_sms}" target="_blank" rel="noopener noreferrer" style="{estilo}">{lab_sms}</a>'
-            "</div>",
-            unsafe_allow_html=True,
-        )
-    elif url_wa:
-        st.sidebar.markdown(
-            f'<a href="{href_wa}" target="_blank" rel="noopener noreferrer" '
-            f'style="display:block;text-align:center;background:#9D1414;color:#fff !important;'
-            f'padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:600;">{lab_wa}</a>',
-            unsafe_allow_html=True,
-        )
-    elif url_sms:
-        st.sidebar.markdown(
-            f'<a href="{href_sms}" target="_blank" rel="noopener noreferrer" '
-            f'style="display:block;text-align:center;background:#9D1414;color:#fff !important;'
-            f'padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:600;">{lab_sms}</a>',
-            unsafe_allow_html=True,
-        )
 
 
 TEXTOS = {
@@ -113,12 +119,9 @@ TEXTOS = {
         "confirmar": "Confirmar envío",
         "nuevo": "Hacer nuevo pedido",
         "salir": "🚪 Salir",
-        "pedido_ok": "Pedido listo. Pulsa «Validar pedido» y luego «Enviar pedido»; después abre WSP o MSG.",
-        "validar_pedido": "Validar pedido",
-        "tras_validar": "Pedido validado. Pulsa «Enviar pedido» para guardarlo y mostrar WhatsApp o SMS.",
-        "enviar_pedido": "Enviar pedido",
-        "paso_elige_canal": "Abre WhatsApp o SMS (nueva pestaña). Al terminar, pulsa «Ya envié el mensaje».",
-        "ya_envie": "Ya envié el mensaje",
+        "pedido_ok": (
+            "Pedido listo. Elige WhatsApp o mensaje de texto; se guarda el pedido y se abre la app."
+        ),
         "nombre_req": "Por favor ingresa el nombre del cliente.",
         "nuevo_ok": "Listo. Puedes comenzar un nuevo pedido.",
         "idioma": "Idioma / Language",
@@ -143,12 +146,9 @@ TEXTOS = {
         "confirmar": "Confirm send",
         "nuevo": "Start new order",
         "salir": "🚪 Exit",
-        "pedido_ok": "Order ready. Tap «Validate order», then «Send order», then open WSP or MSG.",
-        "validar_pedido": "Validate order",
-        "tras_validar": "Order validated. Tap «Send order» to save it and show WhatsApp or SMS.",
-        "enviar_pedido": "Send order",
-        "paso_elige_canal": "Open WhatsApp or SMS (new tab). When finished, tap «I've sent the message».",
-        "ya_envie": "I've sent the message",
+        "pedido_ok": (
+            "Order ready. Choose WhatsApp or text message; the order is saved and the app opens."
+        ),
         "nombre_req": "Please enter customer name.",
         "nuevo_ok": "Done. You can start a new order.",
         "idioma": "Idioma / Language",
@@ -256,15 +256,16 @@ if "pedido_generado" not in st.session_state:
 
 if "envio_confirmado" not in st.session_state:
     st.session_state.envio_confirmado = False
-if "envio_desbloqueado" not in st.session_state:
-    st.session_state.envio_desbloqueado = False
-if "pedido_validado" not in st.session_state:
-    st.session_state.pedido_validado = False
 if "_flash_gracias" not in st.session_state:
     st.session_state._flash_gracias = False
 
 if "_flash_nuevo_pedido" not in st.session_state:
     st.session_state._flash_nuevo_pedido = False
+
+# Abrir WhatsApp/SMS al inicio del rerun (más fiable que components al final del script).
+_messaging_url = st.session_state.pop("_pending_messaging_url", None)
+if _messaging_url:
+    _abrir_url_mensajeria(_messaging_url)
 
 cabecera_portada()
 
@@ -407,7 +408,7 @@ if st.session_state.pop("_expand_sidebar_tras_agregar", False):
     expandir_sidebar_streamlit()
 
 # =========================================================
-# SIDEBAR (pedido): generar -> validar -> enviar (guarda PED) -> enlaces WSP/SMS -> ya envié -> nuevo
+# SIDEBAR (pedido): generar -> WSP o MSG (guarda en datos + abre app) -> gracias / nuevo
 # =========================================================
 total = mostrar_carrito()
 cliente = formulario_cliente()
@@ -453,55 +454,65 @@ if generar:
 
         st.session_state.pedido_generado = True
         st.session_state.envio_confirmado = False
-        st.session_state.envio_desbloqueado = False
-        st.session_state.pedido_validado = False
 
 if st.session_state.pedido_generado and not st.session_state.envio_confirmado:
-    if not st.session_state.pedido_validado:
-        _nota = t("pedido_ok")
-    elif not st.session_state.envio_desbloqueado:
-        _nota = t("tras_validar")
-    else:
-        _nota = t("paso_elige_canal")
     st.sidebar.markdown(
-        f"<div class='elafood-note'>{_nota}</div>",
+        f"<div class='elafood-note'>{t('pedido_ok')}</div>",
         unsafe_allow_html=True,
     )
-
-    if not st.session_state.pedido_validado:
-        validar = st.sidebar.button(
-            t("validar_pedido"),
-            disabled=not telefono_ok,
-            width="stretch",
-            key="btn_validar_pedido",
-        )
-        if validar and telefono_ok:
-            st.session_state.pedido_validado = True
-            st.rerun()
-    elif not st.session_state.envio_desbloqueado:
-        enviar = st.sidebar.button(
-            t("enviar_pedido"),
-            disabled=not telefono_ok,
-            width="stretch",
-            key="btn_enviar_pedido",
-        )
-        if enviar and telefono_ok:
-            registrar_cliente_csv(cliente, "PED")
-            ok_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "PED")
+    # Botones directos del sidebar (ancho completo): en móvil/Cloud enganchan mejor que columnas.
+    if st.sidebar.button(
+        f"{t('wsp')} — WhatsApp",
+        key="btn_send_wsp",
+        type="primary",
+        use_container_width=True,
+    ):
+        if not telefono_ok:
+            if not tel_digits:
+                st.sidebar.warning("Debes ingresar el **Teléfono**.")
+            elif not tel_coherente:
+                st.sidebar.warning(
+                    "El **Teléfono** solo números (sin letras). Ej.: 7875551234 o 17875551234."
+                )
+            else:
+                st.sidebar.warning(
+                    "El **Teléfono** debe tener 10 dígitos o entre 11 y 15 con código país."
+                )
+        else:
+            registrar_cliente_csv(cliente, "WSP")
+            ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "WSP")
             if not ok_db:
-                registrar_pedido_csv(st.session_state.carrito, cliente, "PED")
-            st.session_state.envio_desbloqueado = True
-            st.rerun()
-    else:
-        _sidebar_enlaces_wsp_msg_paralelo(
-            st.session_state.get("link") or "",
-            st.session_state.get("link_sms") or "",
-            t("wsp"),
-            t("msg"),
-        )
-        if st.sidebar.button(t("ya_envie"), width="stretch", key="btn_ya_envie"):
+                registrar_pedido_csv(st.session_state.carrito, cliente, "WSP")
             st.session_state.envio_confirmado = True
             st.session_state._flash_gracias = True
+            st.session_state["_pending_messaging_url"] = st.session_state.link
+            st.rerun()
+    if st.sidebar.button(
+        f"{t('msg')} — SMS",
+        key="btn_send_msg",
+        type="primary",
+        use_container_width=True,
+    ):
+        if not telefono_ok:
+            if not tel_digits:
+                st.sidebar.warning("Debes ingresar el **Teléfono**.")
+            elif not tel_coherente:
+                st.sidebar.warning(
+                    "El **Teléfono** solo números (sin letras). Ej.: 7875551234 o 17875551234."
+                )
+            else:
+                st.sidebar.warning(
+                    "El **Teléfono** debe tener 10 dígitos o entre 11 y 15 con código país."
+                )
+        else:
+            registrar_cliente_csv(cliente, "MSG")
+            ok_db, _err_db = registrar_pedido_supabase(st.session_state.carrito, cliente, "MSG")
+            if not ok_db:
+                registrar_pedido_csv(st.session_state.carrito, cliente, "MSG")
+            st.session_state.envio_confirmado = True
+            st.session_state._flash_gracias = True
+            st.session_state["_pending_messaging_url"] = st.session_state.link_sms
+            st.rerun()
 
 if st.session_state.envio_confirmado:
     if st.session_state.pop("_flash_gracias", False):
@@ -517,8 +528,6 @@ if st.session_state.envio_confirmado:
         st.session_state.link_sms = ""
         st.session_state.pedido_generado = False
         st.session_state.envio_confirmado = False
-        st.session_state.envio_desbloqueado = False
-        st.session_state.pedido_validado = False
         st.session_state._flash_nuevo_pedido = True
         st.rerun()
 

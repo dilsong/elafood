@@ -1,7 +1,11 @@
 import csv
 import os
 
-CSV_CLIENTES = "data/clientes_privados.csv"
+from modules.data_paths import ruta_csv_escribible
+
+
+def _ruta_clientes_csv() -> str:
+    return ruta_csv_escribible("data/clientes_privados.csv", "elafood_clientes_privados.csv")
 
 
 def registrar_cliente_csv(cliente: dict, canal: str) -> None:
@@ -16,10 +20,11 @@ def registrar_cliente_csv(cliente: dict, canal: str) -> None:
     if canal not in {"WSP", "MSG", "PED"}:
         return
 
-    os.makedirs(os.path.dirname(CSV_CLIENTES), exist_ok=True)
+    path_csv = _ruta_clientes_csv()
+    os.makedirs(os.path.dirname(path_csv), exist_ok=True)
     filas = []
-    if os.path.exists(CSV_CLIENTES):
-        with open(CSV_CLIENTES, "r", encoding="utf-8", newline="") as f:
+    if os.path.exists(path_csv):
+        with open(path_csv, "r", encoding="utf-8", newline="") as f:
             filas = list(csv.DictReader(f))
 
     actualizado = False
@@ -41,7 +46,7 @@ def registrar_cliente_csv(cliente: dict, canal: str) -> None:
             }
         )
 
-    with open(CSV_CLIENTES, "w", encoding="utf-8", newline="") as f:
+    with open(path_csv, "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=["telefono", "nombre", "direccion", "canal"])
         w.writeheader()
         w.writerows(filas)

@@ -3,7 +3,11 @@ import os
 from datetime import datetime, timezone
 from uuid import uuid4
 
-CSV_PEDIDOS = "data/pedidos_privados.csv"
+from modules.data_paths import ruta_csv_escribible
+
+
+def _ruta_pedidos_csv() -> str:
+    return ruta_csv_escribible("data/pedidos_privados.csv", "elafood_pedidos_privados.csv")
 
 
 def registrar_pedido_csv(carrito: list, cliente: dict, canal: str) -> None:
@@ -19,12 +23,13 @@ def registrar_pedido_csv(carrito: list, cliente: dict, canal: str) -> None:
     if canal not in {"WSP", "MSG", "PED"}:
         return
 
-    os.makedirs(os.path.dirname(CSV_PEDIDOS), exist_ok=True)
+    path_csv = _ruta_pedidos_csv()
+    os.makedirs(os.path.dirname(path_csv), exist_ok=True)
     pedido_id = str(uuid4())
     fecha_hora = datetime.now(timezone.utc).isoformat()
 
-    existe = os.path.exists(CSV_PEDIDOS)
-    with open(CSV_PEDIDOS, "a", encoding="utf-8", newline="") as f:
+    existe = os.path.exists(path_csv)
+    with open(path_csv, "a", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(
             f,
             fieldnames=[
