@@ -6,11 +6,13 @@ import os
 import importlib
 
 import streamlit as st
+from modules.i18n import get_lang
 from modules.productos import PRODUCTOS
 
 MENU_SEMANA_FILE = "data/menu_semana.json"
 MENU_SEMANA_TABLE = "menu_semana_config"
 MENU_SEMANA_ROW_ID = 1
+MENU_SEMANA_CACHE_TTL_SEC = 24 * 60 * 60
 
 DIAS_ORDEN = [
     "lunes",
@@ -35,6 +37,18 @@ ETIQUETA_DIA = {
 
 
 def etiqueta_dia(clave: str) -> str:
+    if get_lang() == "EN":
+        en = {
+            "lunes": "Monday",
+            "martes": "Tuesday",
+            "miercoles": "Wednesday",
+            "jueves": "Thursday",
+            "viernes": "Friday",
+            "sabado": "Saturday",
+            "domingo": "Sunday",
+            "especial": "Special",
+        }
+        return en.get(clave, clave)
     return ETIQUETA_DIA.get(clave, clave)
 
 
@@ -105,10 +119,11 @@ def _normalizar_menu(data: dict) -> tuple[dict, bool]:
     return base, hubo_limpieza
 
 
-def _cargar_menu_supabase():
+@st.cache_data(ttl=MENU_SEMANA_CACHE_TTL_SEC)
+def _cargar_menu_supabase_cache():
     sb = _supabase_client()
     if sb is None:
-        return None
+        raise RuntimeError("Supabase no disponible")
     try:
         resp = (
             sb.table(MENU_SEMANA_TABLE)
@@ -121,6 +136,13 @@ def _cargar_menu_supabase():
         if not rows:
             return None
         return rows[0].get("data")
+    except Exception as exc:
+        raise RuntimeError("Error cargando menu desde Supabase") from exc
+
+
+def _cargar_menu_supabase():
+    try:
+        return _cargar_menu_supabase_cache()
     except Exception:
         return None
 
@@ -134,6 +156,8 @@ def _guardar_menu_supabase(data: dict) -> bool:
             {"id": MENU_SEMANA_ROW_ID, "data": data},
             on_conflict="id",
         ).execute()
+        # El chef debe ver cambios inmediatamente tras guardar.
+        _cargar_menu_supabase_cache.clear()
         return True
     except Exception:
         return False

@@ -25,6 +25,18 @@ try:
 except Exception:
     pass
 
+if "lang" not in st.session_state:
+    st.session_state.lang = "ES"
+_lang_opt = st.sidebar.selectbox(
+    tr("Idioma / Language", "Language / Idioma"),
+    options=["ES", "EN"],
+    index=0 if st.session_state.lang == "ES" else 1,
+    key="elafood_lang_selector_about",
+)
+if _lang_opt != st.session_state.lang:
+    st.session_state.lang = _lang_opt
+    st.rerun()
+
 st.markdown(
     """
     <h1 style='color:#9D1414; text-align:center; margin-bottom:10px;'>

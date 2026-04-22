@@ -31,7 +31,10 @@ def formulario_cliente():
         tr("Teléfono", "Phone"),
         key="_tel_input",
         on_change=_sync_telefono,
-        help="Solo números. Ej: 7875551234 o 17875551234 (sin espacios ni guiones).",
+        help=tr(
+            "Solo números. Ej: 7875551234 o 17875551234 (sin espacios ni guiones).",
+            "Numbers only. Ex: 7875551234 or 17875551234 (no spaces or hyphens).",
+        ),
     )
     _sync_telefono()
 

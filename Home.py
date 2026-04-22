@@ -13,7 +13,6 @@ from modules.config import (
     RUTA_ICONO_MINI_CARRITO,
     RUTA_LOGO_SALIDA,
     TELEFONO_ELAFOOD,
-    TEXTO_AYUDA_CARRITO,
     URL_FACEBOOK,
     URL_INSTAGRAM,
     URL_QR_COMPARTIR,
@@ -22,8 +21,8 @@ from modules.config import (
 from modules.imagenes import src_para_html
 from modules.pedidos_csv import registrar_pedido_csv
 from modules.estilo import cabecera_portada, estilos_app, expandir_sidebar_streamlit
-from modules.menu_semana import DIAS_ORDEN, ETIQUETA_DIA, cargar_menu_semana
-from modules.productos import PRODUCTOS
+from modules.menu_semana import DIAS_ORDEN, cargar_menu_semana, etiqueta_dia
+from modules.productos import PRODUCTOS, descripcion_ui_producto, nombre_ui_producto
 from modules.chef_notify import notificar_chef_pedido
 from modules.supabase_store import registrar_pedido_supabase
 from modules.tarjetas import tarjeta_producto_hoy
@@ -115,6 +114,11 @@ TEXTOS = {
         "instrucciones_pedido": (
             "Gracias por Preferirnos."
         ),
+        "ayuda_carrito": (
+            "Mira en el **Carrito** **»** arriba a la izquierda para abrir el **menú lateral**: "
+            "allí verás tu **Pedido**; agrega productos, tus datos, elige **→ WSP** o **→ SMS** "
+            "y pulsa **Finalizar pedido**."
+        ),
         "canal_pedido_titulo": "Escoge una opción para enviar tu solicitud del pedido!",
         "opt_wsp": "→ WSP (WhatsApp)",
         "opt_msg": "→ SMS (Texto)",
@@ -139,8 +143,23 @@ TEXTOS = {
         "onb_android": "Android (Chrome): menú ⋮ → Añadir a pantalla de inicio.",
         "intro_postres": INTRO_POSTRES_ESPECIALIDADES,
         "intro_platos": INTRO_PLATOS_SEMANA,
+        "col_comidas": "Comidas",
+        "col_postres": "Postres",
+        "col_otros": "Otros",
+        "especial_titulo": "Especial",
         "esp_vacio": "Aún no hay platos en Especial. El chef puede cargarlos en Quienes Somos! → pestaña Esp.",
         "semana_vacio": "Aún no hay platos publicados para estos días. El chef puede configurarlos en Quienes Somos! (Lunes a Domingo).",
+        "producto_no_existe": "Producto '{pid}' no existe en el catálogo.",
+        "agregado_carrito": "¡Agregado al carrito!",
+        "warn_producto_requerido": "Agrega al menos **un producto** al carrito.",
+        "warn_nombre_telefono": "Debes ingresar **Nombre** y **Teléfono**.",
+        "warn_nombre": "Debes ingresar el **Nombre**.",
+        "warn_telefono": "Debes ingresar el **Teléfono**.",
+        "warn_telefono_solo_numeros": "El **Teléfono** solo números (sin letras). Ej.: 7875551234 o 17875551234.",
+        "warn_telefono_longitud": "El **Teléfono** debe tener 10 dígitos o entre 11 y 15 con código país.",
+        "warn_link_no_generado": "No se pudo generar el enlace. Vuelve con **Hacer nuevo pedido** e inténtalo de nuevo.",
+        "salir_help": "Cierra el flujo y muestra despedida",
+        "social_qr": "Compartir QR",
     },
     "EN": {
         "tabs": ["Desserts &\nSpecialties", "Weekly\nDishes"],
@@ -151,6 +170,11 @@ TEXTOS = {
         "finalizar_pedido": "Complete order",
         "guardando_pedido": "Saving your order…",
         "instrucciones_pedido": "Add items, fill in your details, and choose one delivery channel below.",
+        "ayuda_carrito": (
+            "Check **Cart** **»** at the top-left to open the **side menu**: "
+            "there you can review your **Order**, add your details, choose **→ WSP** or **→ SMS**, "
+            "and tap **Complete order**."
+        ),
         "canal_pedido_titulo": "How will you send the order to the restaurant?",
         "opt_wsp": "→ WSP (WhatsApp)",
         "opt_msg": "→ SMS",
@@ -174,15 +198,32 @@ TEXTOS = {
         "onb_android": "Android (Chrome): menu ⋮ → Add to Home screen.",
         "intro_postres": "Available by pre-order only. Every order is prepared in advance to ensure freshness and quality.",
         "intro_platos": "A different menu every week, with a special dish for each day. Receive ready-to-heat lunches and save time without giving up homemade flavor.",
+        "col_comidas": "Meals",
+        "col_postres": "Desserts",
+        "col_otros": "Others",
+        "especial_titulo": "Special",
         "esp_vacio": "There are no dishes in Special yet. The chef can load them in Who We Are! → Sp. tab.",
         "semana_vacio": "No dishes are published for these days yet. The chef can configure them in Who We Are! (Monday to Sunday).",
+        "producto_no_existe": "Product '{pid}' does not exist in the catalog.",
+        "agregado_carrito": "Added to cart!",
+        "warn_producto_requerido": "Add at least **one product** to the cart.",
+        "warn_nombre_telefono": "Please enter **Name** and **Phone**.",
+        "warn_nombre": "Please enter **Name**.",
+        "warn_telefono": "Please enter **Phone**.",
+        "warn_telefono_solo_numeros": "The **Phone** must contain only numbers. Ex.: 7875551234 or 17875551234.",
+        "warn_telefono_longitud": "The **Phone** must have 10 digits or between 11 and 15 with country code.",
+        "warn_link_no_generado": "Could not generate the link. Use **Start new order** and try again.",
+        "salir_help": "Close flow and show farewell",
+        "social_qr": "Share QR",
     },
 }
 
 
 def t(clave: str) -> str:
-    # i18n desactivado temporalmente: se fuerza español por defecto.
-    return TEXTOS["ES"].get(clave, clave)
+    lang = st.session_state.get("lang", "ES")
+    if lang not in TEXTOS:
+        lang = "ES"
+    return TEXTOS[lang].get(clave, clave)
 
 # ---------------------------------------------------------
 # CONFIGURACIÓN INICIAL
@@ -211,7 +252,18 @@ except Exception:
 
 if "vista_salida" not in st.session_state:
     st.session_state.vista_salida = False
-st.session_state.lang = "ES"
+if "lang" not in st.session_state:
+    st.session_state.lang = "ES"
+
+_lang_opt = st.sidebar.selectbox(
+    t("idioma"),
+    options=["ES", "EN"],
+    index=0 if st.session_state.lang == "ES" else 1,
+    key="elafood_lang_selector",
+)
+if _lang_opt != st.session_state.lang:
+    st.session_state.lang = _lang_opt
+    st.rerun()
 
 if st.session_state.vista_salida:
     # Vista de despedida: muestra logo centrado + mensajes con colores solicitados.
@@ -242,7 +294,7 @@ if st.session_state.vista_salida:
             &nbsp;|&nbsp;
             <a href="{URL_WHATSAPP}" target="_blank" rel="noopener noreferrer" style="color:#9D1414;font-weight:600;">WhatsApp</a>
             &nbsp;|&nbsp;
-            <a href="{_src_qr}" target="_blank" rel="noopener noreferrer" style="color:#9D1414;font-weight:600;">Compartir QR</a>
+            <a href="{_src_qr}" target="_blank" rel="noopener noreferrer" style="color:#9D1414;font-weight:600;">{t("social_qr")}</a>
         </div>
         """,
         unsafe_allow_html=True,
@@ -283,7 +335,7 @@ st.markdown(
         f"<div class='elafood-note' style='display:flex;align-items:flex-start;gap:10px;'>"
         f"<img src='{_src_badge}' alt='Carrito ElaFood' "
         "style='width:22px;height:22px;border-radius:999px;flex-shrink:0;margin-top:2px;'/>"
-        f"<div>{_html_con_negritas_desde_markdown(TEXTO_AYUDA_CARRITO)}</div>"
+        f"<div>{_html_con_negritas_desde_markdown(t('ayuda_carrito'))}</div>"
         "</div>"
     ),
     unsafe_allow_html=True,
@@ -312,20 +364,22 @@ def _render_platos_columna(dia: str, pids: list, titulo: str):
     st.markdown(f"### {titulo}")
     for pid in pids:
         if pid not in PRODUCTOS:
-            st.error(f"Producto '{pid}' no existe en el catálogo.")
+            st.error(t("producto_no_existe").format(pid=pid))
             continue
         p = PRODUCTOS[pid]
+        nombre_ui = nombre_ui_producto(p)
+        desc_ui = descripcion_ui_producto(p)
         key = f"sem_{dia}_{pid}"
         cantidad, agregar_btn = tarjeta_producto_hoy(
-            p["nombre"],
+            nombre_ui,
             p["precio"],
             p["imagen"],
-            p.get("descripcion", ""),
+            desc_ui,
             key,
         )
         if agregar_btn and cantidad > 0:
-            agregar(p["nombre"], cantidad, p["precio"], dia=dia)
-            st.session_state["_flash_agregado_carrito"] = f"{cantidad}× {p['nombre']}"
+            agregar(nombre_ui, cantidad, p["precio"], dia=dia)
+            st.session_state["_flash_agregado_carrito"] = f"{cantidad}× {nombre_ui}"
             st.session_state["_expand_sidebar_tras_agregar"] = True
 
 # =========================================================
@@ -340,7 +394,11 @@ with tab1:
 
     data = cargar_menu_semana()
     esp = data.get("especial") or {"comidas": [], "postres": [], "otros": []}
-    titulos_col = {"comidas": "Comidas", "postres": "Postres", "otros": "Otros"}
+    titulos_col = {
+        "comidas": t("col_comidas"),
+        "postres": t("col_postres"),
+        "otros": t("col_otros"),
+    }
 
     alguno_esp = any(esp.get(k) for k in ("comidas", "postres", "otros"))
 
@@ -348,7 +406,7 @@ with tab1:
         st.info(t("esp_vacio"))
     else:
         st.markdown(
-            "<h2 style='color:#9D1414;'>Especial</h2>",
+            f"<h2 style='color:#9D1414;'>{t('especial_titulo')}</h2>",
             unsafe_allow_html=True,
         )
         for col_key in ("comidas", "postres", "otros"):
@@ -368,7 +426,11 @@ with tab2:
     st.markdown("---")
 
     data = cargar_menu_semana()
-    titulos_col = {"comidas": "Comidas", "postres": "Postres", "otros": "Otros"}
+    titulos_col = {
+        "comidas": t("col_comidas"),
+        "postres": t("col_postres"),
+        "otros": t("col_otros"),
+    }
 
     alguno = any(
         any(data["dias"][d].get(k) for k in ("comidas", "postres", "otros"))
@@ -384,7 +446,7 @@ with tab2:
                 continue
 
             st.markdown(
-                f"<h2 style='color:#9D1414;margin-top:1.2rem;'>{ETIQUETA_DIA[dia]}</h2>",
+                f"<h2 style='color:#9D1414;margin-top:1.2rem;'>{etiqueta_dia(dia)}</h2>",
                 unsafe_allow_html=True,
             )
             for col_key in ("comidas", "postres", "otros"):
@@ -401,7 +463,7 @@ if msg_flash:
     st.markdown(
         f'<div class="elafood-flash-carrito">'
         f'<img class="elafood-flash-carrito-ico" src="{_src_ico}" alt="" />'
-        f"<span><strong>{_txt}</strong> — ¡Agregado al carrito!</span>"
+        f"<span><strong>{_txt}</strong> — {t('agregado_carrito')}</span>"
         f"</div>",
         unsafe_allow_html=True,
     )
@@ -446,21 +508,17 @@ if not st.session_state.envio_confirmado:
     ):
         nombre_ok = bool((cliente.get("nombre") or "").strip())
         if not hay_productos:
-            st.sidebar.warning("Agrega al menos **un producto** al carrito.")
+            st.sidebar.warning(t("warn_producto_requerido"))
         elif not nombre_ok and not telefono_ok:
-            st.sidebar.warning("Debes ingresar **Nombre** y **Teléfono**.")
+            st.sidebar.warning(t("warn_nombre_telefono"))
         elif not nombre_ok:
-            st.sidebar.warning("Debes ingresar el **Nombre**.")
+            st.sidebar.warning(t("warn_nombre"))
         elif not tel_digits:
-            st.sidebar.warning("Debes ingresar el **Teléfono**.")
+            st.sidebar.warning(t("warn_telefono"))
         elif not tel_coherente:
-            st.sidebar.warning(
-                "El **Teléfono** solo números (sin letras). Ej.: 7875551234 o 17875551234."
-            )
+            st.sidebar.warning(t("warn_telefono_solo_numeros"))
         elif not telefono_ok:
-            st.sidebar.warning(
-                "El **Teléfono** debe tener 10 dígitos o entre 11 y 15 con código país."
-            )
+            st.sidebar.warning(t("warn_telefono_longitud"))
         else:
             # Spinner nativo de Streamlit (texto + círculo); no interfiere con Supabase/CSV/notificación.
             with st.spinner(t("guardando_pedido")):
@@ -499,7 +557,7 @@ if st.session_state.envio_confirmado:
             en_sidebar=True,
         )
     else:
-        st.sidebar.warning("No se pudo generar el enlace. Vuelve con **Hacer nuevo pedido** e inténtalo de nuevo.")
+        st.sidebar.warning(t("warn_link_no_generado"))
     if st.sidebar.button(
         t("nuevo"),
         key="elafood_btn_nuevo_pedido",
@@ -522,6 +580,6 @@ if st.session_state.pop("_flash_nuevo_pedido", False):
     )
 
 st.sidebar.markdown("---")
-if st.sidebar.button(t("salir"), width="stretch", help="Cierra el flujo y muestra despedida"):
+if st.sidebar.button(t("salir"), width="stretch", help=t("salir_help")):
     st.session_state.vista_salida = True
     st.rerun()
