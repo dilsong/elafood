@@ -17,8 +17,7 @@
     },
     "jueves": {
       "comidas": [
-        "produ_0031",
-        "produ_0032"
+        "produ_0030"
       ],
       "postres": [],
       "otros": []
@@ -27,13 +26,13 @@
       "comidas": [],
       "postres": [],
       "otros": [
-        "produ_0014",
-        "produ_0013",
-        "produ_0010",
-        "produ_0011",
-        "produ_0012",
-        "produ_0015",
-        "produ_0016"
+        "produ_9080",
+        "produ_9070",
+        "produ_9090",
+        "produ_9100",
+        "produ_9040",
+        "produ_9050",
+        "produ_9060"
       ]
     },
     "sabado": {
@@ -50,19 +49,19 @@
   "especial": {
     "comidas": [],
     "postres": [
-      "produ_005",
-      "produ_0053",
-      "produ_0051",
-      "produ_0052",
-      "produ_0055",
-      "produ_0054",
-      "produ_0056",
-      "produ_006",
-      "produ_0062",
-      "produ_0061",
-      "produ_0057",
-      "produ_0090",
-      "produ_0058"
+      "produ_6010",
+      "produ_6020",
+      "produ_6080",
+      "produ_6040",
+      "produ_6030",
+      "produ_6130",
+      "produ_6100",
+      "produ_6110",
+      "produ_6120",
+      "produ_6060",
+      "produ_6050",
+      "produ_6070",
+      "produ_6090"
     ],
     "otros": []
   }

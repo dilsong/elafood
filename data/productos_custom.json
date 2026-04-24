@@ -1,0 +1,13 @@
+{
+  "prd_1544421fe2": {
+    "nombre": "Pan con Queso",
+    "precio": 25.0,
+    "categoria": "otros",
+    "imagen": "",
+    "descripcion": "Delisioso pan relleno de queso de mano.",
+    "nombre_es": "Pan con Queso",
+    "nombre_en": "Bread with Cheese",
+    "descripcion_es": "Delisioso pan relleno de queso de mano.",
+    "descripcion_en": "Delicious bread stuffed with hand cheese."
+  }
+}
