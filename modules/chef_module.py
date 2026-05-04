@@ -58,6 +58,61 @@ def validar_pin(pin_ingresado: str) -> bool:
     return pin_real != "" and pin_ingresado == pin_real
 
 
+def _chef_ordenar_seleccion(prev: list, selected: list) -> list:
+    """Conserva orden previo y añade nuevas selecciones al final (misma lógica que el editor)."""
+    selected_set = set(selected or [])
+    ordenado = [x for x in (prev or []) if x in selected_set]
+    for x in (selected or []):
+        if x not in ordenado:
+            ordenado.append(x)
+    return ordenado
+
+
+def _chef_opciones_columna(col_key: str) -> list:
+    if col_key == "comidas":
+        return ids_opcion_comidas()
+    if col_key == "postres":
+        return ids_opcion_postres()
+    return ids_opcion_otros()
+
+
+def chef_fusionar_menu_desde_session_state(config: dict) -> None:
+    """
+    Vuelca en `config` las selecciones de **todos** los días y Especial guardadas en session_state.
+
+    Solo el día activo ejecuta los multiselects cada run; sin esto, al guardar se pierden los demás días
+    aunque el usuario los haya configurado antes de cambiar de pestaña de día.
+    """
+    dias = config.setdefault("dias", {})
+    for d in DIAS_ORDEN:
+        bloque = dias.setdefault(d, {"comidas": [], "postres": [], "otros": []})
+        for col in ("comidas", "postres", "otros"):
+            k_ms = f"chef_ms_{d}_{col}"
+            if k_ms not in st.session_state:
+                continue
+            opciones = _chef_opciones_columna(col)
+            seleccionado = [x for x in (st.session_state[k_ms] or []) if x in opciones]
+            order_key = f"chef_ms_order_{d}_{col}"
+            actual_order = [x for x in (st.session_state.get(order_key) or []) if x in opciones]
+            nuevo = _chef_ordenar_seleccion(actual_order, seleccionado)
+            st.session_state[order_key] = list(nuevo)
+            bloque[col] = list(nuevo)
+
+    esp = config.setdefault("especial", {"comidas": [], "postres": [], "otros": []})
+    pref = "especial"
+    for col in ("comidas", "postres", "otros"):
+        k_ms = f"chef_ms_{pref}_{col}"
+        if k_ms not in st.session_state:
+            continue
+        opciones = _chef_opciones_columna(col)
+        seleccionado = [x for x in (st.session_state[k_ms] or []) if x in opciones]
+        order_key = f"chef_ms_order_{pref}_{col}"
+        actual_order = [x for x in (st.session_state.get(order_key) or []) if x in opciones]
+        nuevo = _chef_ordenar_seleccion(actual_order, seleccionado)
+        st.session_state[order_key] = list(nuevo)
+        esp[col] = list(nuevo)
+
+
 def _editor_dia_o_especial(
     config: dict,
     clave: str,
@@ -69,15 +124,6 @@ def _editor_dia_o_especial(
         bloque = config["especial"]
     else:
         bloque = config["dias"][clave]
-
-    def _ordenar_por_seleccion_anterior(prev: list, selected: list) -> list:
-        # Conserva el orden previo del chef y agrega nuevas selecciones al final.
-        selected_set = set(selected or [])
-        ordenado = [x for x in (prev or []) if x in selected_set]
-        for x in (selected or []):
-            if x not in ordenado:
-                ordenado.append(x)
-        return ordenado
 
     def _mover_item(lista: list, idx: int, delta: int) -> list:
         j = idx + delta
@@ -101,7 +147,7 @@ def _editor_dia_o_especial(
             format_func=nombre_producto,
             key=f"chef_ms_{prefijo_keys}_{col_key}",
         )
-        nuevo_orden = _ordenar_por_seleccion_anterior(actual_order, seleccionado)
+        nuevo_orden = _chef_ordenar_seleccion(actual_order, seleccionado)
         st.session_state[order_key] = nuevo_orden
         bloque[col_key] = list(nuevo_orden)
 
@@ -201,9 +247,18 @@ def vista_panel_chef():
         )
 
     st.markdown("---")
+    st.caption(
+        tr(
+            "**Importante:** los cambios en cada día se confirman con **Guardar menú semanal** "
+            "(se incluyen todos los días que hayas tocado, aunque ahora veas otro día en pantalla).",
+            "**Important:** confirm changes with **Save weekly menu** "
+            "(all days you edited are included, even if another day is on screen).",
+        )
+    )
     c1, c2 = st.columns(2)
     with c1:
         if st.button(tr("Guardar menú semanal", "Save weekly menu")):
+            chef_fusionar_menu_desde_session_state(config)
             ok_cloud = guardar_menu_semana(config)
             if ok_cloud:
                 st.success(tr("Menú semanal guardado.", "Weekly menu saved."))
