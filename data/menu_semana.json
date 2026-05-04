@@ -28,11 +28,11 @@
       "otros": [
         "produ_9080",
         "produ_9070",
-        "produ_9090",
-        "produ_9100",
         "produ_9040",
         "produ_9050",
-        "produ_9060"
+        "produ_9060",
+        "produ_9090",
+        "produ_9100"
       ]
     },
     "sabado": {
@@ -54,14 +54,14 @@
       "produ_6080",
       "produ_6040",
       "produ_6030",
-      "produ_6130",
       "produ_6100",
       "produ_6110",
       "produ_6120",
       "produ_6060",
       "produ_6050",
       "produ_6070",
-      "produ_6090"
+      "produ_6090",
+      "produ_6130"
     ],
     "otros": []
   }

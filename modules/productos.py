@@ -496,6 +496,7 @@ PRODUCTOS = {
 
 PRODUCTOS_CUSTOM_FILE = "data/productos_custom.json"
 PRODUCTOS_CUSTOM_TABLE = "productos_catalogo"
+CATALOGO_SOLO_SUPABASE = True
 
 
 def _ruta_productos_custom() -> str:
@@ -610,25 +611,21 @@ def _guardar_producto_custom_supabase(pid: str, data: dict) -> bool:
         return False
 
 
-def _upsert_producto_supabase_detallado(pid: str, payload: dict) -> tuple[bool, str]:
-    sb = _supabase_client()
-    if sb is None:
-        return False, "cliente Supabase no disponible (revisa SUPABASE_URL/SUPABASE_SERVICE_KEY)"
-    try:
-        sb.table(PRODUCTOS_CUSTOM_TABLE).upsert(
-            payload,
-            on_conflict="id",
-        ).execute()
-        return True, ""
-    except Exception as e:
-        return False, str(e)[:500]
-
-
 def _inyectar_productos_custom_en_memoria() -> None:
-    # Prioriza Supabase cuando esté disponible; mantiene fallback local.
+    supabase_rows = _cargar_productos_custom_supabase()
+    if CATALOGO_SOLO_SUPABASE:
+        # Fuente principal del catálogo: Supabase.
+        # Si Supabase no responde o viene vacío, conserva catálogo base para no bloquear panel chef.
+        if supabase_rows:
+            PRODUCTOS.clear()
+            for pid, p in (supabase_rows or {}).items():
+                if pid and isinstance(p, dict):
+                    PRODUCTOS[pid] = p
+        return
+
+    # Modo híbrido (respaldo): local + Supabase.
     custom = _cargar_productos_custom()
-    custom_supabase = _cargar_productos_custom_supabase()
-    merged = {**custom, **custom_supabase}
+    merged = {**custom, **supabase_rows}
     for pid, p in (merged or {}).items():
         if pid and isinstance(p, dict):
             PRODUCTOS[pid] = p
@@ -679,48 +676,10 @@ def agregar_producto_custom(
         "descripcion_en": descripcion_en,
     }
 
-    custom = _cargar_productos_custom()
-    custom[pid] = data
-    if not _guardar_productos_custom(custom):
-        return False, "", "no se pudo guardar productos custom"
-    _guardar_producto_custom_supabase(pid, data)
+    if not _guardar_producto_custom_supabase(pid, data):
+        return False, "", "no se pudo guardar en Supabase"
     PRODUCTOS[pid] = data
     return True, pid, ""
-
-
-def migrar_catalogo_a_supabase(base_only: bool = True) -> tuple[int, int, list[str]]:
-    """
-    Migra productos del catálogo local hacia Supabase.
-    Retorna (ok_count, fail_count, errores_detallados).
-    """
-    ok = 0
-    fail = 0
-    errores: list[str] = []
-    for pid, data in PRODUCTOS.items():
-        if base_only and not str(pid).startswith("produ_"):
-            continue
-        if not isinstance(data, dict):
-            fail += 1
-            errores.append(f"{pid}: data inválida")
-            continue
-        payload = {
-            "id": pid,
-            "nombre_es": data.get("nombre_es") or data.get("nombre") or "",
-            "nombre_en": data.get("nombre_en") or data.get("nombre_es") or data.get("nombre") or "",
-            "descripcion_es": data.get("descripcion_es") or data.get("descripcion") or "",
-            "descripcion_en": data.get("descripcion_en") or data.get("descripcion_es") or data.get("descripcion") or "",
-            "precio": data.get("precio") or 0,
-            "categoria": data.get("categoria") or "",
-            "imagen": data.get("imagen") or "",
-            "activo": True,
-        }
-        ok_row, err = _upsert_producto_supabase_detallado(pid, payload)
-        if ok_row:
-            ok += 1
-        else:
-            fail += 1
-            errores.append(f"{pid}: {err or 'error desconocido'}")
-    return ok, fail, errores
 
 
 _inyectar_productos_custom_en_memoria()

@@ -15,10 +15,27 @@ from modules.menu_semana import (
     menu_semana_por_defecto,
     nombre_producto,
 )
-from modules.productos import agregar_producto_custom, migrar_catalogo_a_supabase
+from modules.productos import agregar_producto_custom
 from modules.translate_suggest import sugerir_en_desde_es
 
 PIN_FILE = "data/chef_pin.secret"
+
+_CHEF_KEYS_FORM_NUEVO_PRODUCTO = (
+    "chef_new_nombre_es",
+    "chef_new_nombre_en",
+    "chef_new_desc_es",
+    "chef_new_desc_en",
+    "chef_new_imagen",
+    "chef_new_precio",
+    "chef_new_categoria",
+)
+
+
+def _chef_limpiar_form_nuevo_producto() -> None:
+    """Resetea session_state del formulario antes de instanciar los widgets."""
+    for k in _CHEF_KEYS_FORM_NUEVO_PRODUCTO:
+        st.session_state.pop(k, None)
+    st.session_state["chef_new_precio"] = 0.0
 
 
 def cargar_pin() -> str:
@@ -199,25 +216,32 @@ def vista_panel_chef():
             for d in DIAS_ORDEN:
                 for col in ("comidas", "postres", "otros"):
                     st.session_state.pop(f"chef_ms_{d}_{col}", None)
-                    st.session_state[f"chef_ms_{d}_{col}"] = []
                     st.session_state.pop(f"chef_ms_order_{d}_{col}", None)
-                    st.session_state[f"chef_ms_order_{d}_{col}"] = []
             for col in ("comidas", "postres", "otros"):
                 st.session_state.pop(f"chef_ms_especial_{col}", None)
-                st.session_state[f"chef_ms_especial_{col}"] = []
                 st.session_state.pop(f"chef_ms_order_especial_{col}", None)
-                st.session_state[f"chef_ms_order_especial_{col}"] = []
             st.success(tr("Plantilla reiniciada.", "Template reset."))
             st.rerun()
 
     st.markdown("---")
-    with st.expander(tr("➕ Agregar producto al catálogo", "➕ Add product to catalog"), expanded=False):
+    expand_add_producto = bool(st.session_state.pop("chef_expand_add_producto", False))
+    with st.expander(
+        tr("➕ Agregar producto al catálogo", "➕ Add product to catalog"),
+        expanded=expand_add_producto,
+    ):
         st.caption(
             tr(
                 "Este formulario crea un producto nuevo para que aparezca en las listas del chef y menú del cliente.",
                 "This form creates a new product so it appears in chef lists and customer menu.",
             )
         )
+        if st.session_state.pop("_chef_product_form_clear", False):
+            _chef_limpiar_form_nuevo_producto()
+        flash_ok = st.session_state.pop("_chef_product_saved_flash", None)
+        if flash_ok:
+            st.success(flash_ok)
+            st.toast(flash_ok)
+
         # Aplicar sugerencias EN pendientes antes de instanciar widgets EN.
         if st.session_state.pop("chef_suggest_apply_pending", False):
             _p_nombre = st.session_state.pop("chef_suggest_nombre_en", "")
@@ -267,31 +291,18 @@ def vista_panel_chef():
                 placeholder="nuevo.jpg",
             )
 
-        c_s1, c_s2 = st.columns(2)
-        with c_s1:
-            if st.button("Sugerir EN", key="chef_suggest_en"):
-                base_name_es = st.session_state.get("chef_new_nombre_es", "").strip()
-                base_desc_es = st.session_state.get("chef_new_desc_es", "").strip()
-                sug_name = sugerir_en_desde_es(base_name_es)
-                sug_desc = sugerir_en_desde_es(base_desc_es)
-                if sug_name or sug_desc:
-                    st.session_state["chef_suggest_nombre_en"] = sug_name
-                    st.session_state["chef_suggest_desc_en"] = sug_desc
-                    st.session_state["chef_suggest_apply_pending"] = True
-                else:
-                    st.warning("No se pudo generar sugerencia en este momento.")
-                st.rerun()
-        with c_s2:
-            if st.button("Migrar catálogo a Supabase", key="chef_migrate_catalog"):
-                ok_n, fail_n, errs = migrar_catalogo_a_supabase(base_only=True)
-                if fail_n == 0:
-                    st.success(f"Migración completada: {ok_n} productos.")
-                else:
-                    st.warning(f"Migración parcial: {ok_n} OK, {fail_n} con error.")
-                    if errs:
-                        st.error("Primer error:\n" + errs[0])
-                        with st.expander("Ver errores de migración", expanded=False):
-                            st.code("\n".join(errs[:50]))
+        if st.button("Sugerir EN", key="chef_suggest_en"):
+            base_name_es = st.session_state.get("chef_new_nombre_es", "").strip()
+            base_desc_es = st.session_state.get("chef_new_desc_es", "").strip()
+            sug_name = sugerir_en_desde_es(base_name_es)
+            sug_desc = sugerir_en_desde_es(base_desc_es)
+            if sug_name or sug_desc:
+                st.session_state["chef_suggest_nombre_en"] = sug_name
+                st.session_state["chef_suggest_desc_en"] = sug_desc
+                st.session_state["chef_suggest_apply_pending"] = True
+            else:
+                st.warning("No se pudo generar sugerencia en este momento.")
+            st.rerun()
 
         if st.button(tr("Guardar producto", "Save product"), key="chef_new_save_producto"):
             base_img = {
@@ -315,12 +326,13 @@ def vista_panel_chef():
                 imagen=imagen,
             )
             if ok:
-                st.success(
-                    tr(
-                        f"Producto creado correctamente. ID: {nuevo_id}",
-                        f"Product created successfully. ID: {nuevo_id}",
-                    )
+                msg = tr(
+                    f"Producto creado correctamente. ID: {nuevo_id}",
+                    f"Product created successfully. ID: {nuevo_id}",
                 )
+                st.session_state["_chef_product_saved_flash"] = msg
+                st.session_state["_chef_product_form_clear"] = True
+                st.session_state["chef_expand_add_producto"] = True
                 st.rerun()
             else:
                 st.error(
