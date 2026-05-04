@@ -204,12 +204,38 @@ def vista_panel_chef():
     c1, c2 = st.columns(2)
     with c1:
         if st.button(tr("Guardar menú semanal", "Save weekly menu")):
-            guardar_menu_semana(config)
-            st.success(tr("Menú semanal guardado.", "Weekly menu saved."))
+            ok_cloud = guardar_menu_semana(config)
+            if ok_cloud:
+                st.success(tr("Menú semanal guardado.", "Weekly menu saved."))
+            else:
+                st.success(
+                    tr(
+                        "Menú guardado en el servidor (archivo local de la app).",
+                        "Menu saved on the app server (local file).",
+                    )
+                )
+                st.warning(
+                    tr(
+                        "No se pudo sincronizar con Supabase: revisa SUPABASE_URL y una clave con permisos "
+                        "de escritura (SUPABASE_SERVICE_KEY o SUPABASE_SERVICE_ROLE_KEY), y que exista la tabla "
+                        "`menu_semana_config` con columnas `id` (int) y `data` (json). Sin eso, el Home en la nube "
+                        "puede mostrar un menú distinto al del chef.",
+                        "Could not sync to Supabase: check SUPABASE_URL and a service key with write access, "
+                        "and that table `menu_semana_config` exists with columns `id` (int) and `data` (json). "
+                        "Without that, Home in the cloud may show a different menu than the chef panel.",
+                    )
+                )
     with c2:
         if st.button(tr("Vaciar toda la semana", "Clear full week")):
             vacio = menu_semana_por_defecto()
-            guardar_menu_semana(vacio)
+            ok_cloud = guardar_menu_semana(vacio)
+            if not ok_cloud:
+                st.warning(
+                    tr(
+                        "Plantilla reiniciada en archivo local; Supabase no se actualizó.",
+                        "Template reset in local file; Supabase was not updated.",
+                    )
+                )
             # Refuerza el reinicio visual y del estado de widgets.
             config["dias"] = vacio["dias"]
             config["especial"] = vacio["especial"]

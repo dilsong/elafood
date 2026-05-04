@@ -12,7 +12,8 @@ from modules.productos import PRODUCTOS
 MENU_SEMANA_FILE = "data/menu_semana.json"
 MENU_SEMANA_TABLE = "menu_semana_config"
 MENU_SEMANA_ROW_ID = 1
-MENU_SEMANA_CACHE_TTL_SEC = 24 * 60 * 60
+# Menú cambia con frecuencia; caché larga dejaba Home desactualizado respecto al chef.
+MENU_SEMANA_CACHE_TTL_SEC = 5 * 60
 
 DIAS_ORDEN = [
     "lunes",
@@ -71,7 +72,11 @@ def _supabase_client():
         return None
     try:
         url = st.secrets.get("SUPABASE_URL", "").strip()
-        key = st.secrets.get("SUPABASE_SERVICE_KEY", "").strip()
+        key = (
+            st.secrets.get("SUPABASE_SERVICE_KEY", "").strip()
+            or st.secrets.get("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+            or st.secrets.get("SUPABASE_KEY", "").strip()
+        )
     except Exception:
         return None
     if not url or not key:
@@ -156,8 +161,6 @@ def _guardar_menu_supabase(data: dict) -> bool:
             {"id": MENU_SEMANA_ROW_ID, "data": data},
             on_conflict="id",
         ).execute()
-        # El chef debe ver cambios inmediatamente tras guardar.
-        _cargar_menu_supabase_cache.clear()
         return True
     except Exception:
         return False
@@ -177,6 +180,7 @@ def cargar_menu_semana() -> dict:
         base, hubo_limpieza = _normalizar_menu(data_supabase)
         if hubo_limpieza:
             _guardar_menu_supabase(base)
+            _cargar_menu_supabase_cache.clear()
         return base
 
     if not os.path.exists(MENU_SEMANA_FILE) or os.path.getsize(MENU_SEMANA_FILE) == 0:
@@ -193,16 +197,20 @@ def cargar_menu_semana() -> dict:
 
     base, hubo_limpieza = _normalizar_menu(data)
     if hubo_limpieza:
-        guardar_menu_semana(base)
+        guardar_menu_semana(base)  # invalida caché al persistir limpieza
     return base
 
 
-def guardar_menu_semana(data: dict) -> None:
+def guardar_menu_semana(data: dict) -> bool:
+    """Persiste menú en Supabase (si hay cliente) y en JSON local. Retorna si Supabase guardó bien."""
     base, _ = _normalizar_menu(data or {})
-    _guardar_menu_supabase(base)
+    ok_cloud = _guardar_menu_supabase(base)
+    # Siempre invalidar caché: si el upsert falló, Home debe poder leer el JSON recién escrito.
+    _cargar_menu_supabase_cache.clear()
     os.makedirs(os.path.dirname(MENU_SEMANA_FILE), exist_ok=True)
     with open(MENU_SEMANA_FILE, "w", encoding="utf-8") as f:
         json.dump(base, f, ensure_ascii=False, indent=2)
+    return ok_cloud
 
 
 def ids_opcion_comidas() -> list:
