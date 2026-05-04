@@ -1,4 +1,5 @@
 # chef_module.py
+import copy
 import os
 
 import streamlit as st
@@ -19,6 +20,8 @@ from modules.productos import agregar_producto_custom
 from modules.translate_suggest import sugerir_en_desde_es
 
 PIN_FILE = "data/chef_pin.secret"
+# Copia del menú en edición: los multiselect solo existen para el día visible; su estado no persiste para el resto.
+CHEF_MENU_BORRADOR = "chef_menu_semana_borrador"
 
 _CHEF_KEYS_FORM_NUEVO_PRODUCTO = (
     "chef_new_nombre_es",
@@ -68,49 +71,11 @@ def _chef_ordenar_seleccion(prev: list, selected: list) -> list:
     return ordenado
 
 
-def _chef_opciones_columna(col_key: str) -> list:
-    if col_key == "comidas":
-        return ids_opcion_comidas()
-    if col_key == "postres":
-        return ids_opcion_postres()
-    return ids_opcion_otros()
-
-
-def chef_fusionar_menu_desde_session_state(config: dict) -> None:
-    """
-    Vuelca en `config` las selecciones de **todos** los días y Especial guardadas en session_state.
-
-    Solo el día activo ejecuta los multiselects cada run; sin esto, al guardar se pierden los demás días
-    aunque el usuario los haya configurado antes de cambiar de pestaña de día.
-    """
-    dias = config.setdefault("dias", {})
-    for d in DIAS_ORDEN:
-        bloque = dias.setdefault(d, {"comidas": [], "postres": [], "otros": []})
-        for col in ("comidas", "postres", "otros"):
-            k_ms = f"chef_ms_{d}_{col}"
-            if k_ms not in st.session_state:
-                continue
-            opciones = _chef_opciones_columna(col)
-            seleccionado = [x for x in (st.session_state[k_ms] or []) if x in opciones]
-            order_key = f"chef_ms_order_{d}_{col}"
-            actual_order = [x for x in (st.session_state.get(order_key) or []) if x in opciones]
-            nuevo = _chef_ordenar_seleccion(actual_order, seleccionado)
-            st.session_state[order_key] = list(nuevo)
-            bloque[col] = list(nuevo)
-
-    esp = config.setdefault("especial", {"comidas": [], "postres": [], "otros": []})
-    pref = "especial"
-    for col in ("comidas", "postres", "otros"):
-        k_ms = f"chef_ms_{pref}_{col}"
-        if k_ms not in st.session_state:
-            continue
-        opciones = _chef_opciones_columna(col)
-        seleccionado = [x for x in (st.session_state[k_ms] or []) if x in opciones]
-        order_key = f"chef_ms_order_{pref}_{col}"
-        actual_order = [x for x in (st.session_state.get(order_key) or []) if x in opciones]
-        nuevo = _chef_ordenar_seleccion(actual_order, seleccionado)
-        st.session_state[order_key] = list(nuevo)
-        esp[col] = list(nuevo)
+def _chef_asegurar_borrador_menu() -> dict:
+    """Menú completo en memoria de sesión; sobrevive al cambiar de día (a diferencia de los multiselect ocultos)."""
+    if CHEF_MENU_BORRADOR not in st.session_state:
+        st.session_state[CHEF_MENU_BORRADOR] = copy.deepcopy(cargar_menu_semana())
+    return st.session_state[CHEF_MENU_BORRADOR]
 
 
 def _editor_dia_o_especial(
@@ -206,7 +171,7 @@ def vista_panel_chef():
 
     st.markdown("---")
 
-    config = cargar_menu_semana()
+    menu = _chef_asegurar_borrador_menu()
 
     opciones_editor = DIAS_ORDEN + ["especial"]
     if "chef_editor_dia_activo" not in st.session_state:
@@ -233,14 +198,14 @@ def vista_panel_chef():
             )
         )
         _editor_dia_o_especial(
-            config,
+            menu,
             "especial",
             tr("Especial (Esp.)", "Special (Sp.)"),
             "especial",
         )
     else:
         _editor_dia_o_especial(
-            config,
+            menu,
             dia_activo,
             ETIQUETA_DIA.get(dia_activo, dia_activo),
             dia_activo,
@@ -249,17 +214,17 @@ def vista_panel_chef():
     st.markdown("---")
     st.caption(
         tr(
-            "**Importante:** los cambios en cada día se confirman con **Guardar menú semanal** "
-            "(se incluyen todos los días que hayas tocado, aunque ahora veas otro día en pantalla).",
-            "**Important:** confirm changes with **Save weekly menu** "
-            "(all days you edited are included, even if another day is on screen).",
+            "**Guardar menú semanal** envía a Supabase/archivo **toda la semana** que llevas en esta sesión "
+            "(cada día que hayas editado queda guardado en el borrador aunque cambies de día).",
+            "**Save weekly menu** writes **the full week** from this session to Supabase/the file "
+            "(each day you edited stays in the draft when you switch days).",
         )
     )
     c1, c2 = st.columns(2)
     with c1:
         if st.button(tr("Guardar menú semanal", "Save weekly menu")):
-            chef_fusionar_menu_desde_session_state(config)
-            ok_cloud = guardar_menu_semana(config)
+            ok_cloud = guardar_menu_semana(copy.deepcopy(menu))
+            st.session_state[CHEF_MENU_BORRADOR] = copy.deepcopy(cargar_menu_semana())
             if ok_cloud:
                 st.success(tr("Menú semanal guardado.", "Weekly menu saved."))
             else:
@@ -283,7 +248,8 @@ def vista_panel_chef():
     with c2:
         if st.button(tr("Vaciar toda la semana", "Clear full week")):
             vacio = menu_semana_por_defecto()
-            ok_cloud = guardar_menu_semana(vacio)
+            ok_cloud = guardar_menu_semana(copy.deepcopy(vacio))
+            st.session_state[CHEF_MENU_BORRADOR] = copy.deepcopy(vacio)
             if not ok_cloud:
                 st.warning(
                     tr(
@@ -292,8 +258,6 @@ def vista_panel_chef():
                     )
                 )
             # Refuerza el reinicio visual y del estado de widgets.
-            config["dias"] = vacio["dias"]
-            config["especial"] = vacio["especial"]
             for d in DIAS_ORDEN:
                 for col in ("comidas", "postres", "otros"):
                     st.session_state.pop(f"chef_ms_{d}_{col}", None)
