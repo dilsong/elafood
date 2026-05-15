@@ -2,3 +2,7 @@
 # Barra superior más discreta (menos iconos por defecto).
 [client]
 toolbarMode = "minimal"
+
+[client]
+toolbarMode = "hidden"
+showErrorDetails = false
